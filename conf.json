@@ -1,0 +1,7 @@
+{
+  "Model": "CLIP",
+  "Backbone": "ViT-L/14",
+  "Label": "Gender",
+  "Flags": "no-baby",
+  "Operations": ["generate", "evaluate", "report", "save_imgs"]
+}
