@@ -4,7 +4,6 @@ from tqdm import tqdm
 import pandas as pd
 from PIL import Image
 import torch
-import clip
 
 
 def generate_image_embeddings(model, img_list):
@@ -50,7 +49,7 @@ def generate_text_embeddings(model, txt_list):
     :rtype: torch.tensor
     """
     text_inputs = torch.cat(
-        [clip.tokenize(c) for c in txt_list]).to(model["Device"])
+        [model["Tokenizer"](c) for c in txt_list]).to(model["Device"])
 
     with torch.no_grad():
         text_features = model["Model"].encode_text(text_inputs)

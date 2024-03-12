@@ -1,4 +1,5 @@
-"""OpenAI original CLIP model handler"""
+"""OpenAI original CLIP model handler
+"""
 import sys
 import torch
 import clip
@@ -26,5 +27,6 @@ def model_setup(model_name):
     print(f"Done! {model_name} model loaded to {device} device")
     model_dict = {"Model": model,
                   "Preprocessing": preprocessing,
-                  "Device": device}
+                  "Device": device,
+                  "Tokenizer": clip.tokenize}
     return model_dict

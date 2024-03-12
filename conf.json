@@ -1,7 +1,11 @@
 {
+  "Operations": ["generate", "evaluate", "report", "save_imgs"],
   "Model": "CLIP",
   "Backbone": "ViT-L/14",
+  "DataSource": "openai",
   "Label": "Gender",
   "Flags": "no-baby",
-  "Operations": ["generate", "evaluate", "report", "save_imgs"]
+  "Image_path": "/home/lucasmc/Documents/ufrgs/datasets/FairFace/val/",
+  "Embeddings_path": "./data/fairface/embeddings",
+  "Labels_path": "./data/fairface/labels"
 }
