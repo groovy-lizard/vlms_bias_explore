@@ -1,11 +1,16 @@
 {
-  "Operations": ["generate", "evaluate", "report", "save_imgs"],
+  "Operations": {
+    "Generate": true,
+    "Evaluate": false,
+    "Report": false,
+    "Save_imgs": false
+  },
   "Model": "CLIP",
   "Backbone": "ViT-L/14",
   "DataSource": "openai",
-  "Label": "Gender",
+  "Target": "Gender",
   "Flags": "no-baby",
-  "Image_path": "/home/lucasmc/Documents/ufrgs/datasets/FairFace/val/",
-  "Embeddings_path": "./data/fairface/embeddings",
-  "Labels_path": "./data/fairface/labels"
+  "Images": "/home/lucasmc/Documents/ufrgs/datasets/FairFace/val/",
+  "Embeddings": "./data/fairface/embeddings/clip/",
+  "Labels": "./data/fairface/labels/age_race_gender.json"
 }

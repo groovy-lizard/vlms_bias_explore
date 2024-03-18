@@ -2,11 +2,11 @@
 """
 
 import json
-from bias_explorer.models import clip_model
-from bias_explorer.models import open_clip_model
+from bias_explorer import operations
+from bias_explorer import models
 
 
-def load_config(json_path="./conf.json"):
+def load_config(json_path='./conf.json'):
     """Load configuration file
 
     :param json_path: config file path, defaults to "./conf.json"
@@ -19,6 +19,20 @@ def load_config(json_path="./conf.json"):
     return data
 
 
+def load_operations():
+    """Load operations modules
+
+    :return: dictionary with operations modules loaded
+    :rtype: dict[obj]
+    """
+    ops = {}
+    ops['Generate'] = operations.generate
+    ops['Evaluate'] = operations.evaluate
+    ops['Report'] = operations.report
+    ops['Save_imgs'] = operations.save_imgs
+    return ops
+
+
 def load_model(conf):
     """Load model based on model type, backbone and datasource
 
@@ -28,17 +42,22 @@ def load_model(conf):
     :rtype: dict
     """
     if conf['Model'] == "CLIP":
-        model_dict = clip_model.model_setup(model_name=conf['Backbone'])
+        model_dict = models.clip_model.model_setup(model_name=conf['Backbone'])
     elif conf['Model'] == "openCLIP":
-        model_dict = open_clip_model.model_setup(
+        model_dict = models.open_clip_model.model_setup(
             model_name=conf['Backbone'], data_source=conf['DataSource'])
     return model_dict
 
 
 def main():
+    """Reads config file and call the appropriate operations
+    """
     conf = load_config()
-    model_dict = load_model(conf)
-    print(model_dict)
+    ops = load_operations()
+    model = load_model(conf)
+    for operation in conf['Operations'].items():
+        if operation[1]:
+            ops[operation[0]].run(conf, model)
 
 
 if __name__ == "__main__":
