@@ -5,6 +5,7 @@ import pandas as pd
 from PIL import Image
 import torch
 from ..utils import dataloader
+from ..utils import system
 
 
 def generate_image_embeddings(model, img_list, outf):
@@ -78,7 +79,15 @@ def run(conf, model):
     print("Initializing generator...")
     prompts, _ = dataloader.load_txts(conf['Labels'])
     img_list = dataloader.load_imgs(conf['Images'])
-    img_out = conf['Embeddings'] + 'generated_img_embs.pkl'
-    txt_out = conf['Embeddings'] + 'generated_txt_embs.pt'
+
+    embeddings_path = conf['Embeddings']
+    model_name = conf['Model']
+    backbone = conf['Backbone']
+    data_source = conf['DataSource']
+    root_path = f"{embeddings_path}/{model_name}/{backbone}/{data_source}/"
+    system.prep_folders(root_path)
+    img_out = root_path + 'generated_img_embs.pkl'
+    txt_out = root_path + 'generated_txt_embs.pt'
+
     generate_text_embeddings(model, prompts, txt_out)
     generate_image_embeddings(model, img_list, img_out)

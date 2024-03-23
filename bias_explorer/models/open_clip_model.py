@@ -28,7 +28,7 @@ def model_setup(model_name, data_source):
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
     model, _, preprocessing = open_clip.create_model_and_transforms(
-        model_name, pretrained=data_source)
+        model_name, pretrained=data_source, device=device)
     print(f"Done! ({model_name}, {data_source}) loaded to {device} device")
     model_dict = {}
     model_dict = {"Model": model,
