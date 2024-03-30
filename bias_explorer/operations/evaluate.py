@@ -87,6 +87,39 @@ def get_top_synm(sims_dict):
     return pd.DataFrame(data=top_synm_dict)
 
 
+def synm_to_gender(synm, man_prompts):
+    """Mapper function to eval between Male and Female synonyms
+
+    :param synm: the synonym to be evaluated
+    :type synm: str
+    :param man_prompts: list of male prompts
+    :type man_prompts: list
+    :return: synonym corresponding gender
+    :rtype: str
+    """
+    if synm in man_prompts:
+        return 'Male'
+    return 'Female'
+
+
+def map_synm_to_gender(df, man_prompts):
+    """Evaluate and map synms to male or female by checking man prompts
+
+    :param df: dataframe to be evaluated
+    :type df: pd.DataFrame
+    :param man_prompts: list of man prompts
+    :type man_prompts: list
+    :return: new dataframe with synonyms and binary gender preds
+    :rtype: pd.DataFrame
+    """
+    new_df = df.copy()
+    new_df['synm'] = new_df['gender_preds']
+    new_df['gender_preds'] = df['gender_preds'].map(
+        lambda x: synm_to_gender(x, man_prompts)
+    )
+    return new_df
+
+
 def get_sum_synms(sims_dict, man_prompts):
     """Ensemble over avg sum of similarities
     between male and female synms
@@ -154,8 +187,8 @@ def run(conf, model):
     print("Initializing evaluator...")
 
     print("Prepping output folders...")
-    embs_path = system.make_embs_path(conf)
-    root_path = system.make_eval_path(conf)
+    embs_path = system.make_out_path(conf, 'Embeddings')
+    root_path = system.make_out_path(conf, 'Results')
     system.prep_folders(root_path)
 
     print("Loading data...")
@@ -177,7 +210,8 @@ def run(conf, model):
     save_df(df=final_sum_df, out=f"{root_path}/sum_synms.csv")
 
     top_df = get_top_synm(sims_dict)
-    final_top_df = generate_final_df(fface_df, top_df)
-    save_df(df=final_top_df, out=f"{root_path}/top_synms.csv")
+    bin_top_df = map_synm_to_gender(top_df, man_prompts)
+    final_bin_top_df = generate_final_df(fface_df, bin_top_df)
+    save_df(df=final_bin_top_df, out=f"{root_path}/top_synms.csv")
 
     print("Evaluation finished")

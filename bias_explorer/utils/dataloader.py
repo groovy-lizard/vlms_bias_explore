@@ -48,9 +48,9 @@ def load_embs(img_path, txt_path):
 
 
 def load_df(df_path):
-    """Load pandas dataframe
+    """Load csv file as pandas dataframe
 
-    :param df_path: path to dataframe
+    :param df_path: path to .csv file
     :type df_path: str
     :return: pandas dataframe loaded from memory
     :rtype: pd.DataFrame

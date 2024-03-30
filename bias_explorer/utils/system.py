@@ -11,36 +11,21 @@ def prep_folders(path):
     Path(path).mkdir(parents=True, exist_ok=True)
 
 
-def make_embs_path(conf):
-    """Concatenate embeddings path using conf items
+def make_out_path(conf, root):
+    """Concatenate output path using conf items
 
     :param conf: configuration dictionary
     :type conf: dict
-    :return: embeddings path
+    :param root: root choice, must match conf key
+    :type root: str
+    :return: output path
     :rtype: str
     """
-    embeddings_path = conf['Embeddings']
+    root_path = conf[root]
     model_name = conf['Model']
     backbone = conf['Backbone']
     data_source = conf['DataSource']
-    embs_path = f"{embeddings_path}/{model_name}/{backbone}/{data_source}"
-    return embs_path
-
-
-def make_eval_path(conf):
-    """Concatenate evaluation path using conf items
-
-    :param conf: configuration dictionary
-    :type conf: dict
-    :return: evaluation path
-    :rtype: str
-    """
-    results_path = conf['Results']
-    model_name = conf['Model']
-    backbone = conf['Backbone']
-    data_source = conf['DataSource']
-    eval_path = f"{results_path}/{model_name}/{backbone}/{data_source}"
-    return eval_path
+    return f"{root_path}/{model_name}/{backbone}/{data_source}"
 
 
 def grab_filename(path):

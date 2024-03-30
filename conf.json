@@ -14,5 +14,6 @@
   "Images": "/home/lucasmc/Documents/ufrgs/datasets/FairFace/val/",
   "Embeddings": "./data/fairface/embeddings",
   "Labels": "./data/fairface/labels/age_race_gender.json",
-  "Results": "./data/fairface/results/"
+  "Results": "./data/fairface/results",
+  "Reports": "./data/fairface/reports"
 }
