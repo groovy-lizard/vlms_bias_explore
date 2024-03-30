@@ -1,62 +1,82 @@
-"""Evaluate synonyms text embeddings over FairFace validation images"""
+"""Evaluation module for comparisons between text and image embeddings"""
 import json
 import torch
-import clip
 import numpy as np
 import pandas as pd
+from ..utils import dataloader
+from ..utils import system
 
 
-def model_setup(model):
-    """Initial loading of CLIP model."""
+def get_similarities(model, img_embeddings, txt_embeddings):
+    """Grab similarity between text and image embeddings
 
-    available_models = clip.available_models()
-
-    if model in available_models:
-        print(f'Loading model: {model}')
-        chosen_model = model
-    else:
-        print(f'{model} unavailable! Using default model: ViT-L/14@336px')
-        chosen_model = available_models[0]
-
-    device = 'cuda' if torch.cuda.is_available() else 'cpu'
-
-    model, pps = clip.load(chosen_model, device=device, jit=False)
-
-    print(f'Done! Model loaded to {device} device')
-    return model, pps
-
-
-def get_similarities(img, txts):
-    """Grab similarity between text and image embeddings."""
-    image_features = torch.from_numpy(img).to('cuda')
-    similarity = 100.0 * image_features @ txts.T
+    :param model: ict containing preprocessing, device and model objects
+    :type model: dict[obj]
+    :param img_embeddings: image embeddings
+    :type img_embeddings: torch.tensor
+    :param txt_embeddings: text embeddings
+    :type txt_embeddings: torch.tensor
+    :return: similarity between image and text embeddings
+    :rtype: float
+    """
+    image_features = torch.from_numpy(img_embeddings).to(model["Device"])
+    similarity = 100.0 * image_features @ txt_embeddings.T
 
     return similarity
 
 
-def get_sims_dict(im_embs, txt_prompts, t_embs):
+def get_sims_dict(model, img_embeddings, txt_prompts, txt_embeddings):
     """Generate dictionary with filename and similarities
-    scores between text prompts"""
+    scores between text prompts
+
+    :param model: dict containig preprocessing, device and model objects
+    :type model: dict[obj]
+    :param img_embeddings: image embeddings
+    :type img_embeddings: torch.tensor
+    :param txt_prompts: textual prompts
+    :type txt_prompts: json
+    :param txt_embeddings: text embeddings
+    :type txt_embeddings: torch.tensor
+    :return: similarities dictionary
+    :rtype: dict
+    """
     final_dict = {}
-    for _, emb in im_embs.iterrows():
+    for _, emb in img_embeddings.iterrows():
         name = emb['file']
         img_features = emb['embeddings']
-        img_sims = get_similarities(img_features, t_embs)
+        img_sims = get_similarities(model, img_features, txt_embeddings)
         s_dict = {}
         for label, score in zip(txt_prompts, img_sims[0]):
             s_dict[label] = score.cpu().numpy().item()
         final_dict[name] = s_dict
-    # TODO: fix naming convention
-    with open('similarities.json', 'w', encoding='utf-8') as ff:
-        json.dump(obj=final_dict, fp=ff, indent=4)
     return final_dict
 
 
-def get_top_synm(final_dict):
-    """Grab most similar synonym"""
-    files = final_dict.keys()
+def save_sims_dict(sims_dict, dest):
+    """Save similarity dictionary
+
+    :param sims_dict: similarity dictionary to be saved
+    :type sims_dict: dict
+    :param dest: destination folder path
+    :type dest: str
+    """
+    print('Saving similarities dictionary to ' + dest)
+    with open(dest, 'w', encoding='utf-8') as ff:
+        json.dump(obj=sims_dict, fp=ff, indent=4)
+    print('Done!')
+
+
+def get_top_synm(sims_dict):
+    """Grab most similar synonym
+
+    :param sims_dict: similarities dictionary
+    :type sims_dict: dict
+    :return: dataframe with filename and gender prediction
+    :rtype: pd.DataFrame
+    """
+    files = sims_dict.keys()
     wins = []
-    for val in final_dict.values():
+    for val in sims_dict.values():
         scores_list = list(val.values())
         label_list = list(val.keys())
         np_scores = np.asarray(scores_list)
@@ -67,85 +87,97 @@ def get_top_synm(final_dict):
     return pd.DataFrame(data=top_synm_dict)
 
 
-def get_sum_synms(final_dict, man_prompts):
+def get_sum_synms(sims_dict, man_prompts):
     """Ensemble over avg sum of similarities
-    between male and female synms"""
-    files = final_dict.keys()
+    between male and female synms
+
+    :param sims_dict: similarities dictionary
+    :type sims_dict: dict
+    :param man_prompts: slice of prompts with only male ones
+    :type man_prompts: list
+    :return: dataframe with filename and gender prediciton
+    :rtype: pd.DataFrame
+    """
+    files = sims_dict.keys()
     preds = []
 
-    for _, val in final_dict.items():
+    for _, val in sims_dict.items():
         man_score = 0
         woman_score = 0
-        for k, v in val.items():
-            if k in man_prompts:
-                man_score += v
+        for prompt, sim_score in val.items():
+            if prompt in man_prompts:
+                man_score += sim_score
             else:
-                woman_score += v
+                woman_score += sim_score
         preds.append('Male' if man_score > woman_score else 'Female')
 
     sum_dict = {'file': files, 'gender_preds': preds}
     return pd.DataFrame(data=sum_dict)
 
 
-def synm_to_gender(synm, man_prompts):
-    """Mapper function to eval between Male and Female
-    synonyms"""
-    if synm in man_prompts:
-        return 'Male'
-    else:
-        return 'Female'
+def generate_final_df(fface_df, scores_df):
+    """Join the winning class df with the original dataset df
 
-
-def generate_final_df(f_df, score_df):
-    """Join the winning class df with the original df"""
-    new_df = f_df.set_index(
-        'file').join(score_df.set_index('file'))
+    :param fface_df: fairFace dataset df
+    :type fface_df: pd.DataFrame
+    :param scores_df: predictions df
+    :type scores_df: pd.DataFrame
+    :return: fairFace dataset df with new 'prediction' column
+    :rtype: pd.DataFrame
+    """
+    new_df = fface_df.set_index('file').join(scores_df.set_index('file'))
     new_df.drop(columns=['service_test'], inplace=True)
     return new_df
 
 
 def save_df(df, out):
-    """Save df to csv"""
-    print(f"saving df to {out}")
+    """Save final dataframe to out folder as csv
+
+    :param df: final fairface dataframe
+    :type df: pd.DataFrame
+    :param out: output destination folder
+    :type out: str
+    """
+    print(f'Saving dataframe to {out}')
     df.to_csv(out)
-    print("Done!")
-    return 0
+    print('Done!')
 
 
-def map_synm_to_gender(df, man_prompts):
-    """Use sub-set of man synms to evaluate and map
-    synms to Male or Female"""
-    new_df = df.copy()
-    new_df['synm'] = new_df['gender_preds']
-    new_df['gender_preds'] = df['gender_preds'].map(
-        lambda x: synm_to_gender(x, man_prompts))
-    return new_df
+def run(conf, model):
+    """Run the Evaluator module
 
+    :param conf: config file
+    :type conf: dict
+    :param model: model utilities object
+    :type model: dict[obj]
+    """
+    print("Initializing evaluator...")
 
-if __name__ == "__main__":
-    ROOT = "/home/lazye/Documents/ufrgs/mcs/clip/clip-bias-explore/\
-fair-face-classification"
-    LABELS_PATH = ROOT + "/data/labels"
-    EMBS_PATH = ROOT + "/data/embeddings"
-    RESULTS_PATH = ROOT + "/data/results"
+    print("Prepping output folders...")
+    embs_path = system.make_embs_path(conf)
+    root_path = system.make_eval_path(conf)
+    system.prep_folders(root_path)
 
-    vit_model = model_setup('ViT-B/16')
-    img_embs = pd.read_pickle(EMBS_PATH+"/fface_val_img_embs.pkl")
-    txt_embs = torch.load(EMBS_PATH+"/age_race_gender.pt")
-    fface_df = pd.read_csv(ROOT+"/data/fface_val.csv")
+    print("Loading data...")
+    prompts, _ = dataloader.load_txts(conf['Labels'])
+    man_prompts = prompts[:32]
+    fface_df = dataloader.load_df(conf['Baseline'])
 
-    with open(LABELS_PATH+"/caption_rad.json", encoding='utf-8') as f:
-        data = json.load(f)
+    img_embs, txt_embs = dataloader.load_embs(
+        img_path=f"{embs_path}/generated_img_embs.pkl",
+        txt_path=f"{embs_path}/generated_txt_embs.pt")
+    print("Done")
 
-    prompt_list = list(data.values())
-    man_p = prompt_list[:32]
+    print("Starting evaluation...")
+    sims_dict = get_sims_dict(model, img_embs, prompts, txt_embs)
+    save_sims_dict(sims_dict, dest=f"{root_path}/similarities.json")
 
-    sims_dict = get_sims_dict(img_embs, prompt_list, txt_embs)
-    # sum_df = get_sum_synms(sims_dict, man_p)
-    # final_sum_df = generate_final_df(fface_df, sum_df)
-    # save_df(final_sum_df, RESULTS_PATH+"/arg_sum_synms.csv")
+    sum_df = get_sum_synms(sims_dict, man_prompts)
+    final_sum_df = generate_final_df(fface_df, sum_df)
+    save_df(df=final_sum_df, out=f"{root_path}/sum_synms.csv")
 
-    # top_df = get_top_synm(final_dict=sims_dict)
-    # bin_top_df = map_synm_to_gender(top_df, man_p)
-    # final_top_df = generate_final_df(fface_df, bin_top_df)
-    # save_df(final_top_df, RESULTS_PATH+"/arg_top_synms.csv")
+    top_df = get_top_synm(sims_dict)
+    final_top_df = generate_final_df(fface_df, top_df)
+    save_df(df=final_top_df, out=f"{root_path}/top_synms.csv")
+
+    print("Evaluation finished")

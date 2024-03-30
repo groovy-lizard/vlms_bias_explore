@@ -34,7 +34,7 @@ def generate_image_embeddings(model, img_list, outf):
         with torch.no_grad():
             image_features = model["Model"].encode_image(img_input)
         image_features /= image_features.norm(dim=-1, keepdim=True)
-        files.append(file_name)
+        files.append(system.grab_filename(file_name))
         embs.append(image_features.cpu().numpy())
     d = {'file': files, 'embeddings': embs}
 
@@ -79,15 +79,10 @@ def run(conf, model):
     print("Initializing generator...")
     prompts, _ = dataloader.load_txts(conf['Labels'])
     img_list = dataloader.load_imgs(conf['Images'])
-
-    embeddings_path = conf['Embeddings']
-    model_name = conf['Model']
-    backbone = conf['Backbone']
-    data_source = conf['DataSource']
-    root_path = f"{embeddings_path}/{model_name}/{backbone}/{data_source}/"
+    root_path = system.make_embs_path(conf)
     system.prep_folders(root_path)
-    img_out = root_path + 'generated_img_embs.pkl'
-    txt_out = root_path + 'generated_txt_embs.pt'
+    img_out = root_path + '/generated_img_embs.pkl'
+    txt_out = root_path + '/generated_txt_embs.pt'
 
     generate_text_embeddings(model, prompts, txt_out)
     generate_image_embeddings(model, img_list, img_out)
