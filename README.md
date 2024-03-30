@@ -8,3 +8,20 @@ By leveraging the capabilities of multiple backbones and data sources, we can th
 
 - Impact of datasources
 - Impact of backbones
+
+## Preliminary Studies
+
+We will start by handpicking some model backbones and datasources.
+
+### Model Backbones
+
+- ViT-L-14
+- ViT-B-32
+
+### Datasources
+
+- openai
+- laion400m_e31
+- laion2b_s32b_b82k
+- datacomp_xl_s13b_b90k
+- commonpool_xl_s13b_b90k

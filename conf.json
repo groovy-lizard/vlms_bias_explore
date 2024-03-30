@@ -1,13 +1,13 @@
 {
   "Operations": {
-    "Generate": false,
-    "Evaluate": false,
+    "Generate": true,
+    "Evaluate": true,
     "Report": true,
     "Save_imgs": false
   },
   "Model": "openCLIP",
   "Backbone": "ViT-L-14",
-  "DataSource": "openai",
+  "DataSource": "commonpool_xl_s13b_b90k",
   "Target": "Gender",
   "Flags": ["no-baby"],
   "Baseline": "./data/fairface/fface_val.csv",
