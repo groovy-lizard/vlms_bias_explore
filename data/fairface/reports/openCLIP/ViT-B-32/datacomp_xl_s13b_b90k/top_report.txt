@@ -1,0 +1,31 @@
+
+# Top K Predictions info:
+--------------------
+## General Accuracy
+Prediction error count: 926 
+Prediction accuracy score: 0.92 
+
+## Accuracy by gender 
+Male: 0.94 
+Female: 0.89 
+
+## Accuracy by race 
+East Asian predictions accuracy: 0.91 
+White predictions accuracy: 0.93 
+Latino_Hispanic predictions accuracy: 0.92 
+Southeast Asian predictions accuracy: 0.9 
+Black predictions accuracy: 0.88 
+Indian predictions accuracy: 0.93 
+Middle Eastern predictions accuracy: 0.95 
+
+## Accuracy by age 
+3-9 predictions accuracy: 0.89 
+50-59 predictions accuracy: 0.93 
+30-39 predictions accuracy: 0.94 
+20-29 predictions accuracy: 0.92 
+more than 70 predictions accuracy: 0.92 
+40-49 predictions accuracy: 0.93 
+10-19 predictions accuracy: 0.89 
+60-69 predictions accuracy: 0.94 
+0-2 predictions accuracy: 0.77 
+--------------------
