@@ -54,10 +54,13 @@ def main():
     """
     conf = load_config()
     ops = load_operations()
-    model = load_model(conf)
-    for operation in conf['Operations'].items():
-        if operation[1]:
-            ops[operation[0]].run(conf, model)
+    for datasource in conf['DataSource']:
+        temp_conf = conf.copy()
+        temp_conf['DataSource'] = datasource
+        model = load_model(temp_conf)
+        for operation in temp_conf['Operations'].items():
+            if operation[1]:
+                ops[operation[0]].run(temp_conf, model)
 
 
 if __name__ == "__main__":

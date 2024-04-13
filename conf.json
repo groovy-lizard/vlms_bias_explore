@@ -6,8 +6,14 @@
     "Save_imgs": false
   },
   "Model": "openCLIP",
-  "Backbone": "ViT-B-32",
-  "DataSource": "commonpool_m_clip_s128m_b4k",
+  "Backbone": "ViT-L-14",
+  "DataSource": [
+    "openai",
+    "laion400m_e31",
+    "laion2b_s32b_b82k",
+    "datacomp_xl_s13b_b90k",
+    "commonpool_xl_s13_b90k"
+  ],
   "Target": "Gender",
   "Flags": ["no-baby"],
   "Baseline": "./data/fairface/fface_val.csv",

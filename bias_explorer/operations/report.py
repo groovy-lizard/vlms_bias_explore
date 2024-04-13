@@ -43,7 +43,7 @@ def acc_by_col(df, col, writer):
     for unique in df[col].unique():
         col_df = filter_df(df, col, unique)
         col_acc = gender_acc(col_df)
-        writer.write(f"{unique} predictions accuracy: {round(col_acc, 2)} \n")
+        writer.write(f"{unique} predictions accuracy: {round(col_acc, 5)} \n")
 
 
 def gen_report(df, pred_name, out):
@@ -64,15 +64,15 @@ def gen_report(df, pred_name, out):
     gen_acc = gender_acc(df)
     gen_miss = df[df['gender'] != df['gender_preds']]
     fp.write(f"Prediction error count: {len(gen_miss)} \n")
-    fp.write(f"Prediction accuracy score: {round(gen_acc, 2)} \n")
+    fp.write(f"Prediction accuracy score: {round(gen_acc, 5)} \n")
 
     fp.write("\n## Accuracy by gender \n")
     male_df = filter_df(df, 'gender', 'Male')
     male_acc = gender_acc(male_df)
     female_df = filter_df(df, 'gender', 'Female')
     female_acc = gender_acc(female_df)
-    fp.write(f"Male: {round(male_acc, 2)} \n")
-    fp.write(f"Female: {round(female_acc, 2)} \n")
+    fp.write(f"Male: {round(male_acc, 5)} \n")
+    fp.write(f"Female: {round(female_acc, 5)} \n")
 
     fp.write("\n## Accuracy by race \n")
     acc_by_col(df, 'race', fp)
