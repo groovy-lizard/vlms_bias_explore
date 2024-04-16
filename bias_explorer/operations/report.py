@@ -1,5 +1,5 @@
 """Report generator module"""
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import balanced_accuracy_score as accuracy_score
 from ..utils import system
 from ..utils import dataloader
 
@@ -27,7 +27,7 @@ def gender_acc(df):
     :return: accuracy score of predictions
     :rtype: float
     """
-    return accuracy_score(df['gender'], df['gender_preds'])
+    return accuracy_score(df['gender'], df['gender_preds'], adjusted=True)
 
 
 def acc_by_col(df, col, writer):
@@ -95,8 +95,8 @@ def run(conf, _):
     eval_path = system.make_out_path(conf, 'Results')
     report_path = system.make_out_path(conf, 'Reports')
     system.prep_folders(report_path)
-    out_sum = f"{report_path}/sum_report.txt"
-    out_top = f"{report_path}/top_report.txt"
+    out_sum = f"{report_path}/adjusted_bal_acc_sum_report.txt"
+    out_top = f"{report_path}/adjusted_bal_acc_top_report.txt"
     sum_df = dataloader.load_df(f"{eval_path}/sum_synms.csv")
     top_df = dataloader.load_df(f"{eval_path}/top_synms.csv")
     gen_report(sum_df, "Average Sum Predictions", out_sum)

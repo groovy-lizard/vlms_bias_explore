@@ -3,36 +3,6 @@
 --------------------
 ## General Accuracy
 Prediction error count: 562 
-Prediction accuracy score: 0.95 
-
-## Accuracy by gender 
-Male: 0.96 
-Female: 0.94 
-
-## Accuracy by race 
-East Asian predictions accuracy: 0.95 
-White predictions accuracy: 0.94 
-Latino_Hispanic predictions accuracy: 0.94 
-Southeast Asian predictions accuracy: 0.95 
-Black predictions accuracy: 0.93 
-Indian predictions accuracy: 0.97 
-Middle Eastern predictions accuracy: 0.97 
-
-## Accuracy by age 
-3-9 predictions accuracy: 0.92 
-50-59 predictions accuracy: 0.97 
-30-39 predictions accuracy: 0.97 
-20-29 predictions accuracy: 0.95 
-more than 70 predictions accuracy: 0.98 
-40-49 predictions accuracy: 0.97 
-10-19 predictions accuracy: 0.92 
-60-69 predictions accuracy: 0.98 
-0-2 predictions accuracy: 0.78 
---------------------
-# Average Sum Predictions info:
---------------------
-## General Accuracy
-Prediction error count: 562 
 Prediction accuracy score: 0.94869 
 
 ## Accuracy by gender 
