@@ -2,7 +2,8 @@
   "Operations": {
     "Generate": false,
     "Evaluate": false,
-    "Report": true,
+    "Report": false,
+    "Concatenate": true,
     "Save_imgs": false
   },
   "Model": "openCLIP",
