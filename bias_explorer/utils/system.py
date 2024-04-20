@@ -49,3 +49,35 @@ def grab_label_name(label_filename):
     """
     label_name = label_filename.split('/')[-1].split('.')[0]
     return label_name
+
+
+def list_item_swap(item_list, i1, i2):
+    """Swap item_list items given value
+
+    :param item_list: item_list containing the items
+    :type item_list: list
+    :param i1: value of item 1
+    :type i1: any
+    :param i2: value of item 2
+    :type i2: any
+    :return: swapped list
+    :rtype: list
+    """
+    i = item_list.index(i1)
+    j = item_list.index(i2)
+    item_list[i], item_list[j] = item_list[j], item_list[i]
+    return item_list
+
+
+def fix_age_order(age_list):
+    """Correctly sort ages list
+
+    :param age_list: list of ages from df uniques
+    :type age_list: list
+    :return: new sorted age list
+    :rtype: list
+    """
+    age_list[0] = '03-09'
+    age_list[-1] = '00-02'
+    age_list.sort()
+    return age_list

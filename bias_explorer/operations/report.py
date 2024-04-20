@@ -1,5 +1,6 @@
 """Report generator module"""
-from sklearn.metrics import accuracy_score as accuracy_score
+from sklearn.metrics import accuracy_score
+import pandas as pd
 from ..utils import system
 from ..utils import dataloader
 
@@ -46,8 +47,8 @@ def acc_by_col(df, col, writer):
         writer.write(f"{unique} predictions accuracy: {round(col_acc, 5)} \n")
 
 
-def gen_report(df, pred_name, label_name, out):
-    """Wrapper report class
+def gen_txt_report(df, pred_name, label_name, out):
+    """Generate textual report
 
     :param df: predictions dataframe
     :type df: pd.DataFrame
@@ -58,6 +59,7 @@ def gen_report(df, pred_name, label_name, out):
     :param out: output folder for the report file
     :type out: str
     """
+    print(f"Generating {pred_name} txt report...")
     with open(out, mode="w", encoding="utf-8") as fp:
         fp.write("# Final Report \n")
         fp.write(f"\nPrediction mode: {pred_name}\n")
@@ -84,6 +86,47 @@ def gen_report(df, pred_name, label_name, out):
         fp.write("\n## Accuracy by age \n")
         acc_by_col(df, 'age', fp)
         fp.write("-"*20)
+    print("Saved at " + out)
+
+
+def gen_csv_report(sum_df, top_df, out):
+    """Generate final csv report
+
+    :param sum_df: average sum dataframe
+    :type sum_df: pd.DataFrame
+    :param top_df: top 1 dataframe
+    :type top_df: pd.DataFrame
+    :param out: output filepath
+    :type out: str
+    """
+    print("Generating csv report...")
+    rep_dict = {}
+    rep_dict['Mode'] = ['Avg Sum', 'Top 1']
+    rep_dict['Accuracy'] = [gender_acc(sum_df), gender_acc(top_df)]
+
+    col_list = list(sum_df.drop(columns=['file', 'gender_preds']).keys())
+    col_list = system.list_item_swap(col_list, 'age', 'gender')
+    col_list = system.list_item_swap(col_list, 'age', 'race')
+
+    for col in col_list:
+        col_items = list(sum_df[col].unique())
+        if col == "age":
+            col_items = system.fix_age_order(col_items)
+        for unique in col_items:
+            if col == "age" and unique == "00-02":
+                data_unique = "0-2"
+            elif col == "age" and unique == "03-09":
+                data_unique = "3-9"
+            else:
+                data_unique = unique
+            sum_col_df = filter_df(sum_df, col, data_unique)
+            sum_col_acc = gender_acc(sum_col_df)
+            top_col_df = filter_df(top_df, col, data_unique)
+            top_col_acc = gender_acc(top_col_df)
+            rep_dict[unique] = [sum_col_acc, top_col_acc]
+    rep_df = pd.DataFrame(rep_dict)
+    rep_df.to_csv(out)
+    print("Saved at " + out)
 
 
 def run(conf, _):
@@ -103,11 +146,13 @@ def run(conf, _):
 
     out_sum = f"{report_path}/sum_report.txt"
     out_top = f"{report_path}/top_report.txt"
+    out_csv = f"{report_path}/report.csv"
 
     sum_df = dataloader.load_df(f"{eval_path}/sum_synms.csv")
     top_df = dataloader.load_df(f"{eval_path}/top_synms.csv")
 
-    gen_report(sum_df, "Average Sum", label_name, out_sum)
-    gen_report(top_df, "Top K", label_name, out_top)
+    gen_txt_report(sum_df, "Average Sum", label_name, out_sum)
+    gen_txt_report(top_df, "Top K", label_name, out_top)
+    gen_csv_report(sum_df, top_df, out_csv)
 
     print("Done!")
