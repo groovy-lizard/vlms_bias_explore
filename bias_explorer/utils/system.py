@@ -37,3 +37,15 @@ def grab_filename(path):
     :rtype: str
     """
     return path.split('FairFace/')[-1]
+
+
+def grab_label_name(label_filename):
+    """Grab the label name from the full filename
+
+    :param label_filename: the label filename from conf
+    :type label_filename: str
+    :return: the label name split from filename
+    :rtype: str
+    """
+    label_name = label_filename.split('/')[-1].split('.')[0]
+    return label_name

@@ -1,5 +1,7 @@
+# Final Report 
 
-# Average Sum Predictions info:
+Prediction mode: Average Sum
+Label mode: age_race_gender 
 --------------------
 ## General Accuracy
 Prediction error count: 458 
