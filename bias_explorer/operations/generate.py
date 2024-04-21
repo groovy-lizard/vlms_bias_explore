@@ -67,7 +67,7 @@ def generate_text_embeddings(model, txt_list, outf):
     print(f"Done! Saved torch tensor to {outf}")
 
 
-def run(conf, model):
+def run(conf):
     """Run the generator
 
     :param conf: conf file loaded from main
@@ -75,7 +75,7 @@ def run(conf, model):
     :param model: model object loaded from main
     :type model: dict[obj]
     """
-
+    model = dataloader.load_model(conf)
     print("Initializing generator...")
     prompts, _ = dataloader.load_txts(conf['Labels'])
     img_list = dataloader.load_imgs(conf['Images'])

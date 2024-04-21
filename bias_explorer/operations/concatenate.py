@@ -5,7 +5,7 @@ import pandas as pd
 from ..utils import dataloader, system
 
 
-def run(conf, _):
+def run(conf):
     """Run the concatenation script
 
     :param conf: configuration dictionary
@@ -18,7 +18,7 @@ def run(conf, _):
     root_path = conf['Reports']
     label_name = system.grab_label_name(conf['Labels'])
     ds_path = f"{root_path}/{model}/{backbone}"
-    out_path = f"{ds_path}/reports_{label_name}.csv"
+    out_path = f"{root_path}/{model}/{backbone}_{label_name}.csv"
 
     if os.path.isfile(out_path):
         sys.exit()

@@ -1,67 +1,20 @@
 """Main script for runing the bias_explorer package
 """
 
-import json
-from bias_explorer import operations
-from bias_explorer import models
-
-
-def load_config(json_path='./conf.json'):
-    """Load configuration file
-
-    :param json_path: config file path, defaults to "./conf.json"
-    :type json_path: str, optional
-    :return: configuration file
-    :rtype: dict
-    """
-    with open(json_path, encoding='utf-8') as f:
-        data = json.load(f)
-    return data
-
-
-def load_operations():
-    """Load operations modules
-
-    :return: dictionary with operations modules loaded
-    :rtype: dict[obj]
-    """
-    ops = {}
-    ops['Generate'] = operations.generate
-    ops['Evaluate'] = operations.evaluate
-    ops['Report'] = operations.report
-    ops['Concatenate'] = operations.concatenate
-    ops['Save_imgs'] = operations.save_imgs
-    return ops
-
-
-def load_model(conf):
-    """Load model based on model type, backbone and datasource
-
-    :param conf: configuration dictionary
-    :type conf: dict
-    :return: an object with model, preprocessing, tokenizer and device
-    :rtype: dict
-    """
-    if conf['Model'] == "CLIP":
-        model_dict = models.clip_model.model_setup(model_name=conf['Backbone'])
-    elif conf['Model'] == "openCLIP":
-        model_dict = models.open_clip_model.model_setup(
-            model_name=conf['Backbone'], data_source=conf['DataSource'])
-    return model_dict
+from bias_explorer.utils import dataloader
 
 
 def main():
     """Reads config file and call the appropriate operations
     """
-    conf = load_config()
-    ops = load_operations()
-    for datasource in conf['DataSource']:
-        temp_conf = conf.copy()
-        temp_conf['DataSource'] = datasource
-        model = load_model(temp_conf)
-        for operation in temp_conf['Operations'].items():
-            if operation[1]:
-                ops[operation[0]].run(temp_conf, model)
+    conf = dataloader.load_config()
+    ops = dataloader.load_operations()
+    for operation in conf['Operations'].items():
+        if operation[1]:
+            for datasource in conf['DataSource']:
+                temp_conf = conf.copy()
+                temp_conf['DataSource'] = datasource
+                ops[operation[0]].run(temp_conf)
 
 
 if __name__ == "__main__":

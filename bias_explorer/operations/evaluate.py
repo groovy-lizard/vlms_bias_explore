@@ -176,7 +176,7 @@ def save_df(df, out):
     print('Done!')
 
 
-def run(conf, model):
+def run(conf):
     """Run the Evaluator module
 
     :param conf: config file
@@ -184,6 +184,7 @@ def run(conf, model):
     :param model: model utilities object
     :type model: dict[obj]
     """
+    model = dataloader.load_model(conf)
     print("Initializing evaluator...")
 
     print("Prepping output folders...")

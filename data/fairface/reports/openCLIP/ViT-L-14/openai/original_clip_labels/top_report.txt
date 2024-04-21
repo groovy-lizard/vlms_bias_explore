@@ -1,0 +1,33 @@
+# Final Report 
+
+Prediction mode: Top K
+Label mode: original_clip_labels 
+--------------------
+## General Accuracy
+Prediction error count: 5162 
+Prediction accuracy score: 0.52876 
+
+## Accuracy by gender 
+Male: 1.0 
+Female: 0.0 
+
+## Accuracy by race 
+East Asian predictions accuracy: 0.50129 
+White predictions accuracy: 0.53813 
+Latino_Hispanic predictions accuracy: 0.4886 
+Southeast Asian predictions accuracy: 0.51943 
+Black predictions accuracy: 0.5135 
+Indian predictions accuracy: 0.4967 
+Middle Eastern predictions accuracy: 0.67246 
+
+## Accuracy by age 
+3-9 predictions accuracy: 0.54646 
+50-59 predictions accuracy: 0.62312 
+30-39 predictions accuracy: 0.56309 
+20-29 predictions accuracy: 0.44485 
+more than 70 predictions accuracy: 0.50847 
+40-49 predictions accuracy: 0.61789 
+10-19 predictions accuracy: 0.46486 
+60-69 predictions accuracy: 0.64486 
+0-2 predictions accuracy: 0.61809 
+--------------------

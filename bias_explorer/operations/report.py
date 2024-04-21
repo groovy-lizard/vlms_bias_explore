@@ -129,7 +129,7 @@ def gen_csv_report(sum_df, top_df, out):
     print("Saved at " + out)
 
 
-def run(conf, _):
+def run(conf):
     """Run report generator
 
     :param conf: configuration dictionary
