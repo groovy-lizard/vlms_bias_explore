@@ -1,5 +1,5 @@
 """Report generator module"""
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import accuracy_score, balanced_accuracy_score
 import pandas as pd
 from ..utils import system
 from ..utils import dataloader
@@ -20,7 +20,7 @@ def filter_df(df, col, val):
     return df[df[col] == val]
 
 
-def gender_acc(df):
+def gender_eval(df, metric):
     """Return the accuracy score of the gender vs gender predictions
 
     :param df: dataframe with true label gender and gender preds
@@ -28,10 +28,25 @@ def gender_acc(df):
     :return: accuracy score of predictions
     :rtype: float
     """
-    return accuracy_score(df['gender'], df['gender_preds'])
+    return metric(df['gender'], df['gender_preds'])
 
 
-def acc_by_col(df, col, writer):
+def metric_loader(metric_name):
+    """Loads the corresponding metric function
+
+    :param metric_name: name of the metric set on config file
+    :type metric_name: str
+    :return: function of the chosen metric
+    :rtype: func
+    """
+    metric_functions = {
+        "accuracy": accuracy_score,
+        "balanced_accuracy": balanced_accuracy_score
+    }
+    return metric_functions[metric_name]
+
+
+def acc_by_col(df, col, metric, writer):
     """Generate predictions accuracy by column
 
     :param df: target dataframe
@@ -43,11 +58,11 @@ def acc_by_col(df, col, writer):
     """
     for unique in df[col].unique():
         col_df = filter_df(df, col, unique)
-        col_acc = gender_acc(col_df)
+        col_acc = gender_eval(col_df, metric)
         writer.write(f"{unique} predictions accuracy: {round(col_acc, 5)} \n")
 
 
-def gen_txt_report(df, pred_name, label_name, out):
+def gen_txt_report(df, metric, pred_name, label_name, out):
     """Generate textual report
 
     :param df: predictions dataframe
@@ -67,29 +82,29 @@ def gen_txt_report(df, pred_name, label_name, out):
         fp.write("-"*20)
 
         fp.write("\n## General Accuracy\n")
-        gen_acc = gender_acc(df)
+        gen_acc = gender_eval(df, metric)
         gen_miss = df[df['gender'] != df['gender_preds']]
         fp.write(f"Prediction error count: {len(gen_miss)} \n")
         fp.write(f"Prediction accuracy score: {round(gen_acc, 5)} \n")
 
         fp.write("\n## Accuracy by gender \n")
         male_df = filter_df(df, 'gender', 'Male')
-        male_acc = gender_acc(male_df)
+        male_acc = gender_eval(male_df, metric)
         female_df = filter_df(df, 'gender', 'Female')
-        female_acc = gender_acc(female_df)
+        female_acc = gender_eval(female_df, metric)
         fp.write(f"Male: {round(male_acc, 5)} \n")
         fp.write(f"Female: {round(female_acc, 5)} \n")
 
         fp.write("\n## Accuracy by race \n")
-        acc_by_col(df, 'race', fp)
+        acc_by_col(df, 'race', metric, fp)
 
         fp.write("\n## Accuracy by age \n")
-        acc_by_col(df, 'age', fp)
+        acc_by_col(df, 'age', metric, fp)
         fp.write("-"*20)
     print("Saved at " + out)
 
 
-def gen_csv_report(sum_df, top_df, out):
+def gen_csv_report(sum_df, top_df, metric, out):
     """Generate final csv report
 
     :param sum_df: average sum dataframe
@@ -102,7 +117,8 @@ def gen_csv_report(sum_df, top_df, out):
     print("Generating csv report...")
     rep_dict = {}
     rep_dict['Mode'] = ['Avg Sum', 'Top 1']
-    rep_dict['Accuracy'] = [gender_acc(sum_df), gender_acc(top_df)]
+    rep_dict['Accuracy'] = [gender_eval(
+        sum_df, metric), gender_eval(top_df, metric)]
 
     col_list = list(sum_df.drop(columns=['file', 'gender_preds']).keys())
     col_list = system.list_item_swap(col_list, 'age', 'gender')
@@ -120,9 +136,9 @@ def gen_csv_report(sum_df, top_df, out):
             else:
                 data_unique = unique
             sum_col_df = filter_df(sum_df, col, data_unique)
-            sum_col_acc = gender_acc(sum_col_df)
+            sum_col_acc = gender_eval(sum_col_df, metric)
             top_col_df = filter_df(top_df, col, data_unique)
-            top_col_acc = gender_acc(top_col_df)
+            top_col_acc = gender_eval(top_col_df, metric)
             rep_dict[unique] = [sum_col_acc, top_col_acc]
     rep_df = pd.DataFrame(rep_dict)
     rep_df.to_csv(out)
@@ -138,21 +154,18 @@ def run(conf):
     :type _: None
     """
     print("Generating Report...")
+    metric_func = metric_loader(conf['Metric'])
     label_name = system.grab_label_name(conf['Labels'])
     eval_path = system.make_out_path(conf, 'Results')
     report_root_path = system.make_out_path(conf, 'Reports')
     report_path = f"{report_root_path}/{label_name}"
     system.prep_folders(report_path)
 
-    out_sum = f"{report_path}/sum_report.txt"
-    out_top = f"{report_path}/top_report.txt"
     out_csv = f"{report_path}/report.csv"
 
     sum_df = dataloader.load_df(f"{eval_path}/sum_synms.csv")
     top_df = dataloader.load_df(f"{eval_path}/top_synms.csv")
 
-    gen_txt_report(sum_df, "Average Sum", label_name, out_sum)
-    gen_txt_report(top_df, "Top K", label_name, out_top)
-    gen_csv_report(sum_df, top_df, out_csv)
+    gen_csv_report(sum_df, top_df, metric_func, out_csv)
 
     print("Done!")

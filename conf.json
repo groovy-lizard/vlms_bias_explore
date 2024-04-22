@@ -1,10 +1,11 @@
 {
   "Operations": {
     "Generate": false,
-    "Evaluate": true,
-    "Report": true,
-    "Concatenate": true,
-    "Save_imgs": false
+    "Evaluate": false,
+    "Report": false,
+    "Concatenate": false,
+    "Save_imgs": false,
+    "Analyze": false
   },
   "Model": "openCLIP",
   "Backbone": "ViT-L-14",
@@ -17,6 +18,7 @@
   ],
   "Target": "Gender",
   "Flags": ["no-baby"],
+  "Metric": "accuracy",
   "Baseline": "./data/fairface/fface_val.csv",
   "Images": "/home/lucasmc/Documents/ufrgs/datasets/FairFace/val/",
   "Embeddings": "./data/fairface/embeddings",
