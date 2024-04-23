@@ -29,7 +29,7 @@ def load_operations():
     """
     ops = {}
     ops['Generate'] = operations.generate
-    ops['Evaluate'] = operations.evaluate
+    ops['Predict'] = operations.predict
     ops['Report'] = operations.report
     ops['Concatenate'] = operations.concatenate
     ops['Save_imgs'] = operations.save_imgs

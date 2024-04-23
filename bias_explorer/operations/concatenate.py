@@ -15,10 +15,11 @@ def run(conf):
     """
     model = conf['Model']
     backbone = conf['Backbone']
-    root_path = conf['Reports']
+    metric = conf['Metric']
+    report_path = conf['Reports']
+    ds_path = f"{report_path}/{model}/{backbone}"
     label_name = system.grab_label_name(conf['Labels'])
-    ds_path = f"{root_path}/{model}/{backbone}"
-    out_path = f"{root_path}/{model}/{backbone}_{label_name}.csv"
+    out_path = f"{report_path}/{model}/{backbone}_{metric}_{label_name}.csv"
 
     if os.path.isfile(out_path):
         sys.exit()
@@ -26,10 +27,10 @@ def run(conf):
     print("Collecting reports...")
     ds_list = os.listdir(ds_path)
     reports = {}
-    for datasource in ds_list:
-        report_path = f"{ds_path}/{datasource}/{label_name}/report.csv"
-        reports[datasource] = dataloader.load_df(report_path)
-        reports[datasource].drop(columns=['Unnamed: 0'], inplace=True)
+    for dsource in ds_list:
+        report_path = f"{ds_path}/{dsource}/{label_name}/{metric}_report.csv"
+        reports[dsource] = dataloader.load_df(report_path)
+        reports[dsource].drop(columns=['Unnamed: 0'], inplace=True)
     print("Concating...")
     report_df = pd.concat(reports)
     report_df.rename(

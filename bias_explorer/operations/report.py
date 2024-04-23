@@ -57,6 +57,7 @@ def acc_by_col(df, col, metric, writer):
     :type writer: io.TextIOWrapper
     """
     for unique in df[col].unique():
+        print(f"Measuring {unique}...")
         col_df = filter_df(df, col, unique)
         col_acc = gender_eval(col_df, metric)
         writer.write(f"{unique} predictions accuracy: {round(col_acc, 5)} \n")
@@ -104,7 +105,7 @@ def gen_txt_report(df, metric, pred_name, label_name, out):
     print("Saved at " + out)
 
 
-def gen_csv_report(sum_df, top_df, metric, out):
+def gen_csv_report(sum_df, top_df, metric, metric_name, out):
     """Generate final csv report
 
     :param sum_df: average sum dataframe
@@ -117,11 +118,15 @@ def gen_csv_report(sum_df, top_df, metric, out):
     print("Generating csv report...")
     rep_dict = {}
     rep_dict['Mode'] = ['Avg Sum', 'Top 1']
-    rep_dict['Accuracy'] = [gender_eval(
+    rep_dict[metric_name] = [gender_eval(
         sum_df, metric), gender_eval(top_df, metric)]
 
-    col_list = list(sum_df.drop(columns=['file', 'gender_preds']).keys())
-    col_list = system.list_item_swap(col_list, 'age', 'gender')
+    if metric_name == "balanced_accuracy":
+        col_list = list(sum_df.drop(
+            columns=['file', 'gender_preds', 'gender']).keys())
+    else:
+        col_list = list(sum_df.drop(columns=['file', 'gender_preds']).keys())
+        col_list = system.list_item_swap(col_list, 'age', 'gender')
     col_list = system.list_item_swap(col_list, 'age', 'race')
 
     for col in col_list:
@@ -130,14 +135,12 @@ def gen_csv_report(sum_df, top_df, metric, out):
             col_items = system.fix_age_order(col_items)
         for unique in col_items:
             if col == "age" and unique == "00-02":
-                data_unique = "0-2"
+                unique = "0-2"
             elif col == "age" and unique == "03-09":
-                data_unique = "3-9"
-            else:
-                data_unique = unique
-            sum_col_df = filter_df(sum_df, col, data_unique)
+                unique = "3-9"
+            sum_col_df = filter_df(sum_df, col, unique)
             sum_col_acc = gender_eval(sum_col_df, metric)
-            top_col_df = filter_df(top_df, col, data_unique)
+            top_col_df = filter_df(top_df, col, unique)
             top_col_acc = gender_eval(top_col_df, metric)
             rep_dict[unique] = [sum_col_acc, top_col_acc]
     rep_df = pd.DataFrame(rep_dict)
@@ -154,18 +157,17 @@ def run(conf):
     :type _: None
     """
     print("Generating Report...")
-    metric_func = metric_loader(conf['Metric'])
-    label_name = system.grab_label_name(conf['Labels'])
-    eval_path = system.make_out_path(conf, 'Results')
-    report_root_path = system.make_out_path(conf, 'Reports')
-    report_path = f"{report_root_path}/{label_name}"
+    metric_name = conf['Metric']
+    metric_func = metric_loader(metric_name=metric_name)
+    preds = system.concat_out_path(conf, 'Predictions')
+    report_path = system.concat_out_path(conf, 'Reports')
     system.prep_folders(report_path)
 
-    out_csv = f"{report_path}/report.csv"
+    out_csv = f"{report_path}/{metric_name}_report.csv"
 
-    sum_df = dataloader.load_df(f"{eval_path}/sum_synms.csv")
-    top_df = dataloader.load_df(f"{eval_path}/top_synms.csv")
+    sum_df = dataloader.load_df(f"{preds}/sum_synms.csv")
+    top_df = dataloader.load_df(f"{preds}/top_synms.csv")
 
-    gen_csv_report(sum_df, top_df, metric_func, out_csv)
+    gen_csv_report(sum_df, top_df, metric_func, metric_name, out_csv)
 
     print("Done!")

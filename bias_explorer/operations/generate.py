@@ -79,7 +79,7 @@ def run(conf):
     print("Initializing generator...")
     prompts, _ = dataloader.load_txts(conf['Labels'])
     img_list = dataloader.load_imgs(conf['Images'])
-    root_path = system.make_out_path(conf, 'Embeddings')
+    root_path = system.concat_out_path(conf, 'Embeddings')
     system.prep_folders(root_path)
     img_out = root_path + '/generated_img_embs.pkl'
     txt_out = root_path + '/generated_txt_embs.pt'

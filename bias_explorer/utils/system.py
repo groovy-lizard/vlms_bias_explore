@@ -11,7 +11,7 @@ def prep_folders(path):
     Path(path).mkdir(parents=True, exist_ok=True)
 
 
-def make_out_path(conf, root):
+def concat_out_path(conf, root):
     """Concatenate output path using conf items
 
     :param conf: configuration dictionary
@@ -25,7 +25,11 @@ def make_out_path(conf, root):
     model_name = conf['Model']
     backbone = conf['Backbone']
     data_source = conf['DataSource']
-    return f"{root_path}/{model_name}/{backbone}/{data_source}"
+    out_path = f"{root_path}/{model_name}/{backbone}/{data_source}"
+    if 'Embeddings' not in root:
+        label_name = grab_label_name(conf['Labels'])
+        out_path = f"{out_path}/{label_name}"
+    return out_path
 
 
 def grab_filename(path):
