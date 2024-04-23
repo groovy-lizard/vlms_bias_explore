@@ -9,12 +9,15 @@ def main():
     """
     conf = dataloader.load_config()
     ops = dataloader.load_operations()
-    for operation in conf['Operations'].items():
-        if operation[1]:
-            for datasource in conf['DataSource']:
-                temp_conf = conf.copy()
-                temp_conf['DataSource'] = datasource
-                ops[operation[0]].run(temp_conf)
+    for datasource in conf['DataSource']:
+        temp_conf = conf.copy()
+        temp_conf['DataSource'] = datasource
+        for operation in conf['Operations'].items():
+            if "Concatenate" not in operation[0]:
+                if operation[1]:
+                    ops[operation[0]].run(temp_conf)
+    if conf['Operations']['Concatenate']:
+        ops['Concatenate'].run(conf)
 
 
 if __name__ == "__main__":

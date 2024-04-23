@@ -75,14 +75,18 @@ def run(conf):
     :param model: model object loaded from main
     :type model: dict[obj]
     """
+    flags = conf['Flags']
     model = dataloader.load_model(conf)
+    label_name = system.grab_label_name(conf['Labels'])
     print("Initializing generator...")
     prompts, _ = dataloader.load_txts(conf['Labels'])
     img_list = dataloader.load_imgs(conf['Images'])
     root_path = system.concat_out_path(conf, 'Embeddings')
     system.prep_folders(root_path)
     img_out = root_path + '/generated_img_embs.pkl'
-    txt_out = root_path + '/generated_txt_embs.pt'
-
+    txt_out = root_path + f'/{label_name}_generated_txt_embs.pt'
     generate_text_embeddings(model, prompts, txt_out)
-    generate_image_embeddings(model, img_list, img_out)
+    if not flags['text-only']:
+        generate_image_embeddings(model, img_list, img_out)
+    else:
+        print("Skipping image embeddings...")

@@ -205,6 +205,7 @@ def run(conf):
     print("Prepping output folders...")
     embs_path = system.concat_out_path(conf, 'Embeddings')
     preds_path = system.concat_out_path(conf, 'Predictions')
+    label_name = system.grab_label_name(conf['Labels'])
     system.prep_folders(preds_path)
 
     print("Loading data...")
@@ -214,7 +215,7 @@ def run(conf):
 
     img_embs, txt_embs = dataloader.load_embs(
         img_path=f"{embs_path}/generated_img_embs.pkl",
-        txt_path=f"{embs_path}/generated_txt_embs.pt")
+        txt_path=f"{embs_path}/{label_name}_generated_txt_embs.pt")
     print("Done")
 
     print("Starting predictions...")

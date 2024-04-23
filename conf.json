@@ -2,7 +2,7 @@
   "Operations": {
     "Generate": false,
     "Predict": false,
-    "Report": false,
+    "Report": true,
     "Concatenate": true,
     "Save_imgs": false,
     "Analyze": false
@@ -17,12 +17,15 @@
     "commonpool_xl_s13b_b90k"
   ],
   "Target": "Gender",
-  "Flags": ["no-baby"],
-  "Metric": "accuracy",
+  "Flags": {
+    "no-baby": false,
+    "text-only": true
+  },
+  "Metric": "balanced_accuracy",
   "Baseline": "./data/fairface/fface_val.csv",
   "Images": "/home/lucasmc/Documents/ufrgs/datasets/FairFace/val/",
   "Embeddings": "./data/fairface/embeddings",
-  "Labels": "./data/fairface/labels/raw_gender_labels.json",
+  "Labels": "./data/fairface/labels/age_race_gender.json",
   "Predictions": "./data/fairface/predictions",
   "Reports": "./data/fairface/reports"
 }
