@@ -66,7 +66,18 @@ def save_sims_dict(sims_dict, dest):
     print('Done!')
 
 
-def get_top_synm(sims_dict):
+def split_man_woman(label_dict):
+    woman_list = []
+    man_list = []
+    for label in label_dict.items():
+        if "woman" in label.keys():
+            woman_list.append(label)
+        else:
+            man_list.append(label)
+    return woman_list, man_list
+
+
+def get_top_synm(sims_dict, k):
     """Grab most similar synonym
 
     :param sims_dict: similarities dictionary
@@ -204,7 +215,7 @@ def run(conf):
     embs_path = system.concat_out_path(conf, 'Embeddings')
     preds_path = system.concat_out_path(conf, 'Predictions')
     label_name = system.grab_label_name(conf['Labels'])
-    k = 2
+    k = conf['Top K']
     system.prep_folders(preds_path)
 
     print("Loading data...")
@@ -226,7 +237,7 @@ def run(conf):
     final_sum_df = generate_final_df(fface_df, sum_df)
     save_df(df=final_sum_df, out=f"{preds_path}/sum_synms.csv")
 
-    top_df = get_top_synm(sims_dict)
+    top_df = get_top_synm(sims_dict, k)
     bin_top_df = map_synm_to_gender(top_df, man_prompts)
     final_bin_top_df = generate_final_df(fface_df, bin_top_df)
     save_df(df=final_bin_top_df, out=f"{preds_path}/top_synms.csv")
