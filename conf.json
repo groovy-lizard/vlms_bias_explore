@@ -21,6 +21,7 @@
     "no-baby": false,
     "text-only": true
   },
+  "Top K": 2,
   "Metric": "balanced_accuracy",
   "Baseline": "./data/fairface/fface_val.csv",
   "Images": "/home/lucasmc/Documents/ufrgs/datasets/FairFace/val/",

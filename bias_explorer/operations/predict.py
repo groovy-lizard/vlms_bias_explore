@@ -199,13 +199,12 @@ def run(conf):
     :param model: model utilities object
     :type model: dict[obj]
     """
-    model = dataloader.load_model(conf)
     print("Initializing predictor...")
-
     print("Prepping output folders...")
     embs_path = system.concat_out_path(conf, 'Embeddings')
     preds_path = system.concat_out_path(conf, 'Predictions')
     label_name = system.grab_label_name(conf['Labels'])
+    k = 2
     system.prep_folders(preds_path)
 
     print("Loading data...")
@@ -219,7 +218,8 @@ def run(conf):
     print("Done")
 
     print("Starting predictions...")
-    sims_dict = get_sims_dict(model, img_embs, prompts, txt_embs)
+    sims_dict = get_sims_dict(dataloader.load_model(
+        conf), img_embs, prompts, txt_embs)
     save_sims_dict(sims_dict, dest=f"{preds_path}/similarities.json")
 
     sum_df = get_sum_synms(sims_dict, man_prompts)
