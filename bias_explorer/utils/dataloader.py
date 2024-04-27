@@ -67,6 +67,19 @@ def load_txts(path):
     return (prompts, labels)
 
 
+def load_json(path):
+    """Load json from path and returns its data
+
+    :param path: json filepath
+    :type path: str
+    :return: json file from path
+    :rtype: dict
+    """
+    with open(path, encoding='utf-8') as f:
+        data = json.load(f)
+    return data
+
+
 def load_imgs(path):
     """Load FairFace images from path
 

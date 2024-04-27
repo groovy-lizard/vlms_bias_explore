@@ -1,4 +1,5 @@
 """Report generator module"""
+import glob
 from sklearn.metrics import accuracy_score, balanced_accuracy_score
 import pandas as pd
 from ..utils import system
@@ -63,74 +64,60 @@ def acc_by_col(df, col, metric, writer):
         writer.write(f"{unique} predictions accuracy: {round(col_acc, 4)} \n")
 
 
-def gen_txt_report(df, metric, pred_name, label_name, out):
-    """Generate textual report
+def get_topk_preds(preds_path):
+    """Grab the path of all top 'k' predictions
 
-    :param df: predictions dataframe
+    :param preds_path: root prediction path
+    :type preds_path: str
+    :return: a dictionary with k: pred_path
+    :rtype: dict
+    """
+    preds_list = glob.glob(preds_path + '/top*.csv')
+    k_preds = {}
+    for pred in preds_list:
+        fname = pred.split("/")[-1]
+        name_parts = fname.split("_")
+        if len(name_parts) > 2:
+            k = name_parts[1]
+        else:
+            k = 1
+        k_preds[k] = pred
+    return k_preds
+
+
+def get_col_list(df, metric_name):
+    """Get the list of columns from a given dataframe
+
+    :param df: dataframe with predictions
     :type df: pd.DataFrame
-    :param pred_name: prediction mode
-    :type pred_name: str
-    :param label_name: label mode
-    :type label_name: str
-    :param out: output folder for the report file
-    :type out: str
+    :param metric_name: name of the metric to be used
+    :type metric_name: str
+    :return: list of columns from given df
+    :rtype: list
     """
-    print(f"Generating {pred_name} txt report...")
-    with open(out, mode="w", encoding="utf-8") as fp:
-        fp.write("# Final Report \n")
-        fp.write(f"\nPrediction mode: {pred_name}\n")
-        fp.write(f"Label mode: {label_name} \n")
-        fp.write("-"*20)
-
-        fp.write("\n## General Accuracy\n")
-        gen_acc = gender_eval(df, metric)
-        gen_miss = df[df['gender'] != df['gender_preds']]
-        fp.write(f"Prediction error count: {len(gen_miss)} \n")
-        fp.write(f"Prediction accuracy score: {round(gen_acc, 5)} \n")
-
-        fp.write("\n## Accuracy by gender \n")
-        male_df = filter_df(df, 'gender', 'Male')
-        male_acc = gender_eval(male_df, metric)
-        female_df = filter_df(df, 'gender', 'Female')
-        female_acc = gender_eval(female_df, metric)
-        fp.write(f"Male: {round(male_acc, 5)} \n")
-        fp.write(f"Female: {round(female_acc, 5)} \n")
-
-        fp.write("\n## Accuracy by race \n")
-        acc_by_col(df, 'race', metric, fp)
-
-        fp.write("\n## Accuracy by age \n")
-        acc_by_col(df, 'age', metric, fp)
-        fp.write("-"*20)
-    print("Saved at " + out)
-
-
-def gen_csv_report(sum_df, top_df, k, metric, metric_name, out):
-    """Generate final csv report
-
-    :param sum_df: average sum dataframe
-    :type sum_df: pd.DataFrame
-    :param top_df: top 1 dataframe
-    :type top_df: pd.DataFrame
-    :param out: output filepath
-    :type out: str
-    """
-    print("Generating csv report...")
-    rep_dict = {}
-    rep_dict['Mode'] = ['Avg Sum', f'Top {k}']
-    rep_dict[metric_name] = [gender_eval(
-        sum_df, metric), gender_eval(top_df, metric)]
-
     if metric_name == "balanced_accuracy":
-        col_list = list(sum_df.drop(
+        col_list = list(df.drop(
             columns=['file', 'gender_preds', 'gender']).keys())
     else:
-        col_list = list(sum_df.drop(columns=['file', 'gender_preds']).keys())
+        col_list = list(df.drop(columns=['file', 'gender_preds']).keys())
         col_list = system.list_item_swap(col_list, 'age', 'gender')
     col_list = system.list_item_swap(col_list, 'age', 'race')
+    return col_list
 
+
+def get_uniques(df, col_list):
+    """Get Unique values from columns
+
+    :param df: dataframe with predictions
+    :type df: pd.DataFrame
+    :param col_list: list of columns from dataframe
+    :type col_list: list
+    :return: list of unique values from column
+    :rtype: list
+    """
+    uniques = []
     for col in col_list:
-        col_items = list(sum_df[col].unique())
+        col_items = list(df[col].unique())
         if col == "age":
             col_items = system.fix_age_order(col_items)
         for unique in col_items:
@@ -138,14 +125,77 @@ def gen_csv_report(sum_df, top_df, k, metric, metric_name, out):
                 unique = "0-2"
             elif col == "age" and unique == "03-09":
                 unique = "3-9"
-            sum_col_df = filter_df(sum_df, col, unique)
-            sum_col_acc = gender_eval(sum_col_df, metric)
-            top_col_df = filter_df(top_df, col, unique)
-            top_col_acc = gender_eval(top_col_df, metric)
-            rep_dict[unique] = [sum_col_acc, top_col_acc]
-    rep_df = pd.DataFrame(rep_dict)
-    rep_df.to_csv(out)
-    print("Saved at " + out)
+            uniques.append(unique)
+    return uniques
+
+
+def get_empty_report_dict(df, metric_name):
+    """Generate a new empty report dictionary
+
+    :param df: dataframe with predictions to extract columns
+    :type df: pd.DataFrame
+    :param metric_name: name of the metric to be used
+    :type metric_name: str
+    :return: an empty report dictionary
+    :rtype: dict
+    """
+    report_dict = {
+        'Mode': [],
+        metric_name: [],
+    }
+
+    col_list = get_col_list(df, metric_name)
+    uniques = get_uniques(df, col_list)
+    for unique in uniques:
+        report_dict[unique] = []
+    return report_dict
+
+
+def gen_dict_report(df, mode_name, metric_name, rep_dict):
+    """Generate the dictionary report
+
+    :param df: dataframe with predictions
+    :type df: pd.DataFrame
+    :param mode_name: name of the prediction mode used
+    :type mode_name: str
+    :param metric_name: name of the metric used
+    :type metric_name: str
+    :param rep_dict: current report dictionary
+    :type rep_dict: str
+    :return: updated report dictionary
+    :rtype: dict
+    """
+    metric_func = metric_loader(metric_name)
+    rep_dict['Mode'].append(mode_name)
+    rep_dict[metric_name].append(gender_eval(df, metric_func))
+    col_list = get_col_list(df, metric_name)
+    for col in col_list:
+        uniques = get_uniques(df, [col])
+        for unique in uniques:
+            col_df = filter_df(df, col, unique)
+            col_acc = gender_eval(col_df, metric_func)
+            rep_dict[unique].append(col_acc)
+    return rep_dict
+
+
+def add_topk_preds(preds_path, metric_name, rep_dict):
+    """Add the report of the top k predictions
+
+    :param preds_path: path to root predictions folder
+    :type preds_path: str
+    :param metric_name: name of the metric used
+    :type metric_name: str
+    :param rep_dict: current dictionary to add top k reports
+    :type rep_dict: dict
+    :return: updated reports dictionary
+    :rtype: dict
+    """
+    k_preds = get_topk_preds(preds_path)
+    for k, path in k_preds.items():
+        mode_name = f"Top {k}"
+        k_df = dataloader.load_df(path)
+        rep_dict = gen_dict_report(k_df, mode_name, metric_name, rep_dict)
+    return rep_dict
 
 
 def run(conf):
@@ -159,16 +209,17 @@ def run(conf):
     print("Generating Report...")
     metric_name = conf['Metric']
     k = conf['Top K']
-    metric_func = metric_loader(metric_name=metric_name)
     preds = system.concat_out_path(conf, 'Predictions')
     report_path = system.concat_out_path(conf, 'Reports')
     system.prep_folders(report_path)
-
     out_csv = f"{report_path}/{metric_name}_report.csv"
 
     sum_df = dataloader.load_df(f"{preds}/sum_synms.csv")
-    top_df = dataloader.load_df(f"{preds}/top_{k}_synms.csv")
 
-    gen_csv_report(sum_df, top_df, k, metric_func, metric_name, out_csv)
+    rep_dict = get_empty_report_dict(sum_df, metric_name)
+    rep_dict = gen_dict_report(sum_df, "Avg Sum", metric_name, rep_dict)
+    rep_dict = add_topk_preds(preds, metric_name, rep_dict)
 
+    rep_df = pd.DataFrame(rep_dict)
+    rep_df.to_csv(out_csv)
     print("Done!")

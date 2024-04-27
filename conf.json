@@ -2,7 +2,7 @@
   "Operations": {
     "Generate": false,
     "Predict": true,
-    "Report": false,
+    "Report": true,
     "Concatenate": false,
     "Save_imgs": false,
     "Analyze": false
@@ -21,7 +21,7 @@
     "no-baby": false,
     "text-only": true
   },
-  "Top K": 2,
+  "Top K": 15,
   "Metric": "accuracy",
   "Baseline": "./data/fairface/fface_val.csv",
   "Images": "/home/lucasmc/Documents/ufrgs/datasets/FairFace/val/",
