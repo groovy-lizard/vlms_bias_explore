@@ -67,17 +67,66 @@ def save_sims_dict(sims_dict, dest):
 
 
 def split_man_woman(label_dict):
+    """Split dictionary into man and woman tuples
+
+    :param label_dict: dictionary of similarities
+    :type label_dict: dict
+    :return: tuple of woman and man list
+    :rtype: tuple(list, list)
+    """
     woman_list = []
     man_list = []
     for label in label_dict.items():
-        if "woman" in label.keys():
+        key = label[0]
+        if "woman" in key:
             woman_list.append(label)
         else:
             man_list.append(label)
     return woman_list, man_list
 
 
-def get_top_synm(sims_dict, k):
+def get_k_score(tuple_list, k):
+    """Get final score of k sum
+
+    :param tuple_list: list of tuples with (label, similarity)
+    :type tuple_list: list(tuple)
+    :param k: k hyperparameter
+    :type k: int
+    :return: the sum of the top k similarities
+    :rtype: float
+    """
+    scores = []
+    for tup in tuple_list:
+        scores.append(tup[1])
+    scores = sorted(scores, reverse=True)
+    return sum(scores[:k])
+
+
+def get_top_k_winner(sims_dict, k):
+    """Generate dataframe with the winning label of top k method
+
+    :param sims_dict: similarities dictionary
+    :type sims_dict: dict
+    :param k: k hyperparameter
+    :type k: int
+    :return: dataframe with filename and final prediciton label
+    :rtype: pd.DataFrame
+    """
+    files = sims_dict.keys()
+    wins = []
+    for val in sims_dict.values():
+        woman_list, man_list = split_man_woman(val)
+        w_score = get_k_score(woman_list, k)
+        m_score = get_k_score(man_list, k)
+        if w_score > m_score:
+            wins.append("Female")
+        else:
+            wins.append("Male")
+    top_k_dict = {'file': files, 'gender_preds': wins}
+    return pd.DataFrame(data=top_k_dict)
+
+
+def get_top_synm(sims_dict):
     """Grab most similar synonym
 
     :param sims_dict: similarities dictionary
@@ -220,7 +269,6 @@ def run(conf):
 
     print("Loading data...")
     prompts, _ = dataloader.load_txts(conf['Labels'])
-    man_prompts = get_man_prompts(prompts)
     fface_df = dataloader.load_df(conf['Baseline'])
 
     img_embs, txt_embs = dataloader.load_embs(
@@ -233,13 +281,13 @@ def run(conf):
         conf), img_embs, prompts, txt_embs)
     save_sims_dict(sims_dict, dest=f"{preds_path}/similarities.json")
 
-    sum_df = get_sum_synms(sims_dict, man_prompts)
+    sum_df = get_sum_synms(sims_dict, get_man_prompts(prompts))
     final_sum_df = generate_final_df(fface_df, sum_df)
     save_df(df=final_sum_df, out=f"{preds_path}/sum_synms.csv")
 
-    top_df = get_top_synm(sims_dict, k)
-    bin_top_df = map_synm_to_gender(top_df, man_prompts)
-    final_bin_top_df = generate_final_df(fface_df, bin_top_df)
-    save_df(df=final_bin_top_df, out=f"{preds_path}/top_synms.csv")
+    top_df = get_top_k_winner(sims_dict, k)
+    final_bin_top_df = generate_final_df(fface_df, top_df)
+    save_df(df=final_bin_top_df,
+            out=f"{preds_path}/top_{k}_synms.csv")
 
     print("Predictions finished")

@@ -105,7 +105,7 @@ def gen_txt_report(df, metric, pred_name, label_name, out):
     print("Saved at " + out)
 
 
-def gen_csv_report(sum_df, top_df, metric, metric_name, out):
+def gen_csv_report(sum_df, top_df, k, metric, metric_name, out):
     """Generate final csv report
 
     :param sum_df: average sum dataframe
@@ -117,7 +117,7 @@ def gen_csv_report(sum_df, top_df, metric, metric_name, out):
     """
     print("Generating csv report...")
     rep_dict = {}
-    rep_dict['Mode'] = ['Avg Sum', 'Top 1']
+    rep_dict['Mode'] = ['Avg Sum', f'Top {k}']
     rep_dict[metric_name] = [gender_eval(
         sum_df, metric), gender_eval(top_df, metric)]
 
@@ -158,6 +158,7 @@ def run(conf):
     """
     print("Generating Report...")
     metric_name = conf['Metric']
+    k = conf['Top K']
     metric_func = metric_loader(metric_name=metric_name)
     preds = system.concat_out_path(conf, 'Predictions')
     report_path = system.concat_out_path(conf, 'Reports')
@@ -166,8 +167,8 @@ def run(conf):
     out_csv = f"{report_path}/{metric_name}_report.csv"
 
     sum_df = dataloader.load_df(f"{preds}/sum_synms.csv")
-    top_df = dataloader.load_df(f"{preds}/top_synms.csv")
+    top_df = dataloader.load_df(f"{preds}/top_{k}_synms.csv")
 
-    gen_csv_report(sum_df, top_df, metric_func, metric_name, out_csv)
+    gen_csv_report(sum_df, top_df, k, metric_func, metric_name, out_csv)
 
     print("Done!")

@@ -3,7 +3,7 @@
     "Generate": false,
     "Predict": false,
     "Report": true,
-    "Concatenate": true,
+    "Concatenate": false,
     "Save_imgs": false,
     "Analyze": false
   },
@@ -22,7 +22,7 @@
     "text-only": true
   },
   "Top K": 2,
-  "Metric": "balanced_accuracy",
+  "Metric": "accuracy",
   "Baseline": "./data/fairface/fface_val.csv",
   "Images": "/home/lucasmc/Documents/ufrgs/datasets/FairFace/val/",
   "Embeddings": "./data/fairface/embeddings",
