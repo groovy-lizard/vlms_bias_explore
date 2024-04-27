@@ -28,7 +28,7 @@ def gender_eval(df, metric):
     :return: accuracy score of predictions
     :rtype: float
     """
-    return metric(df['gender'], df['gender_preds'])
+    return round(metric(df['gender'], df['gender_preds']), 4)
 
 
 def metric_loader(metric_name):
@@ -60,7 +60,7 @@ def acc_by_col(df, col, metric, writer):
         print(f"Measuring {unique}...")
         col_df = filter_df(df, col, unique)
         col_acc = gender_eval(col_df, metric)
-        writer.write(f"{unique} predictions accuracy: {round(col_acc, 5)} \n")
+        writer.write(f"{unique} predictions accuracy: {round(col_acc, 4)} \n")
 
 
 def gen_txt_report(df, metric, pred_name, label_name, out):

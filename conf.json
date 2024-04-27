@@ -1,8 +1,8 @@
 {
   "Operations": {
     "Generate": false,
-    "Predict": false,
-    "Report": true,
+    "Predict": true,
+    "Report": false,
     "Concatenate": false,
     "Save_imgs": false,
     "Analyze": false
