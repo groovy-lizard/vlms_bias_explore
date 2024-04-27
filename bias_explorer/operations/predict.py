@@ -265,13 +265,13 @@ def run(conf):
     embs_path = system.concat_out_path(conf, 'Embeddings')
     preds_path = system.concat_out_path(conf, 'Predictions')
     label_name = system.grab_label_name(conf['Labels'])
-    k = conf['Top K']
     system.prep_folders(preds_path)
 
     print("Loading data...")
     prompts, _ = dataloader.load_txts(conf['Labels'])
     fface_df = dataloader.load_df(conf['Baseline'])
     sims_path = f"{preds_path}/similarities.json"
+
     if not os.path.isfile(sims_path):
         img_embs, txt_embs = dataloader.load_embs(
             img_path=f"{embs_path}/generated_img_embs.pkl",
@@ -290,9 +290,18 @@ def run(conf):
     final_sum_df = generate_final_df(fface_df, sum_df)
     save_df(df=final_sum_df, out=f"{preds_path}/sum_synms.csv")
 
-    top_df = get_top_k_winner(sims_dict, k)
-    final_bin_top_df = generate_final_df(fface_df, top_df)
-    save_df(df=final_bin_top_df,
-            out=f"{preds_path}/top_{k}_synms.csv")
+    if conf['Flags']['multiple-k']:
+        max_k = conf['Top K']
+        for k in range(1, max_k+1):
+            top_df = get_top_k_winner(sims_dict, k)
+            final_bin_top_df = generate_final_df(fface_df, top_df)
+            save_df(df=final_bin_top_df,
+                    out=f"{preds_path}/top_{k}_synms.csv")
+    else:
+        k = conf['Top K']
+        top_df = get_top_k_winner(sims_dict, k)
+        final_bin_top_df = generate_final_df(fface_df, top_df)
+        save_df(df=final_bin_top_df,
+                out=f"{preds_path}/top_{k}_synms.csv")
 
     print("Predictions finished")

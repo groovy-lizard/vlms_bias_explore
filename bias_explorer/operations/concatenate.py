@@ -4,6 +4,42 @@ import pandas as pd
 from ..utils import dataloader, system
 
 
+def collect_reports(ds_path, ln, metric):
+    """Collect reports from all datasources
+
+    :param ds_path: path to datasources root folder
+    :type ds_path: str
+    :param ln: label name
+    :type ln: str
+    :param metric: metric name
+    :type metric: str
+    :return: dictionary with datasource: dataframe
+    :rtype: dict
+    """
+    ds_list = os.listdir(ds_path)
+    reports = {}
+    for dsource in ds_list:
+        report_path = f"{ds_path}/{dsource}/{ln}/{metric}_report.csv"
+        ds_df = dataloader.load_df(report_path)
+        ds_df = ds_df.drop(columns=['Unnamed: 0'])
+        reports[dsource] = ds_df
+    return reports
+
+
+def filter_best_modes(reports):
+    """Retrieve roll of the best prediciton mode
+
+    :param reports: dictionary with reports
+    :type reports: dict
+    :return: a filtered report with only best row
+    :rtype: dict
+    """
+    filtered_reports = {}
+    for dsname, df in reports.items():
+        filtered_reports[dsname] = df.loc[df['accuracy'].idxmax()]
+    return filtered_reports
+
+
 def run(conf):
     """Run the concatenation script
 
@@ -16,21 +52,17 @@ def run(conf):
     backbone = conf['Backbone']
     metric = conf['Metric']
     report_path = conf['Reports']
+
     ds_path = f"{report_path}/{model}/{backbone}"
     ln = system.grab_label_name(conf['Labels'])
     out_path = f"{report_path}/{model}/{backbone}_{metric}_{ln}.csv"
 
     print("Collecting reports...")
-    ds_list = os.listdir(ds_path)
-    reports = {}
-    for dsource in ds_list:
-        report_path = f"{ds_path}/{dsource}/{ln}/{metric}_report.csv"
-        reports[dsource] = dataloader.load_df(report_path)
-        reports[dsource].drop(columns=['Unnamed: 0'], inplace=True)
+    reps = collect_reports(ds_path, ln, metric)
+    best_reps = filter_best_modes(reps)
+
     print("Concating...")
-    report_df = pd.concat(reports)
-    report_df.rename(
-        columns={"Latino_Hispanic": "Latino Hispanic"}, inplace=True)
+    report_df = pd.DataFrame(best_reps.values(), index=best_reps.keys())
     print("Saving...")
     report_df.to_csv(out_path)
     print("Done!")
