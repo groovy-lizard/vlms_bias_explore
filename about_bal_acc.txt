@@ -1,0 +1,9 @@
+# Gender distribution
+
+gender
+Male      5792
+Female    5162
+
+laion2b_s32b_b82k Top 11
+accuracy: 0.9682
+balanced_accuracy: 0.9688

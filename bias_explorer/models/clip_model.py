@@ -5,6 +5,21 @@ import torch
 import clip
 
 
+def adjust_vit_name(model_name):
+    """Adjust the ViT model name from open to CLIP signature
+
+    :param model_name: model name from conf['Backbone']
+    :type model_name: str
+    :return: adjusted model name for CLIP model loading
+    :rtype: str
+    """
+    if 'ViT' in model_name:
+        v, s, n = model_name.split('-')
+        new_name = f"{v}-{s}/{n}"
+        return new_name
+    return model_name
+
+
 def model_setup(model_name):
     """Initial loading of CLIP model
 
@@ -14,7 +29,8 @@ def model_setup(model_name):
     :rtype: dict
     """
     available_models = clip.available_models()
-
+    model_name = adjust_vit_name(model_name)
+    
     if model_name in available_models:
         print(f"Loading model: {model_name}")
     else:

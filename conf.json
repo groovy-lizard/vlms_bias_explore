@@ -1,13 +1,12 @@
 {
   "Operations": {
-    "Generate": false,
+    "Generate": true,
     "Predict": true,
     "Report": true,
-    "Concatenate": true,
-    "Save_imgs": false,
-    "Analyze": false
+    "Analyze": false,
+    "Save_imgs": false
   },
-  "Model": "openCLIP",
+  "Model": "CLIP",
   "Backbone": "ViT-L-14",
   "DataSource": [
     "openai",
@@ -19,15 +18,16 @@
   "Target": "Gender",
   "Flags": {
     "no-baby": false,
-    "text-only": true,
-    "multiple-k": true
+    "text-only": false,
+    "multiple-k": false,
+    "concatenate": false
   },
-  "Top K": 20,
+  "Top K": 1,
   "Metric": "accuracy",
   "Baseline": "./data/fairface/fface_val.csv",
   "Images": "/home/lucasmc/Documents/ufrgs/datasets/FairFace/val/",
   "Embeddings": "./data/fairface/embeddings",
-  "Labels": "./data/fairface/labels/raw_gender_labels.json",
+  "Labels": "./data/fairface/labels/original_clip_labels.json",
   "Predictions": "./data/fairface/predictions",
   "Reports": "./data/fairface/reports"
 }

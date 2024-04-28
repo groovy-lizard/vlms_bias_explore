@@ -9,14 +9,19 @@ def main():
     """
     conf = dataloader.load_config()
     ops = dataloader.load_operations()
-    for datasource in conf['DataSource']:
-        temp_conf = conf.copy()
-        temp_conf['DataSource'] = datasource
-        for operation in conf['Operations'].items():
-            if "Concatenate" not in operation[0]:
+    if conf['Model'] == 'openCLIP':
+        for datasource in conf['DataSource']:
+            temp_conf = conf.copy()
+            temp_conf['DataSource'] = datasource
+            for operation in conf['Operations'].items():
                 if operation[1]:
                     ops[operation[0]].run(temp_conf)
-    if conf['Operations']['Concatenate']:
+    else:
+        conf['DataSource'] = 'openai'
+        for operation in conf['Operations'].items():
+            if operation[1]:
+                ops[operation[0]].run(conf)
+    if conf['Flags']['concatenate']:
         ops['Concatenate'].run(conf)
 
 
