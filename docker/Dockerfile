@@ -1,6 +1,8 @@
 # syntax=docker/dockerfile:1
 FROM nvidia/cuda:12.3.1-base-ubuntu20.04
 
+ARG DEBIAN_FRONTEND=noninteractive
+
 # remove any third-party apt sources to avoid issues with expiring keys
 RUN rm -f /etc/apt/sources.list.d/*.list
 
