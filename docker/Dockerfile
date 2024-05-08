@@ -25,11 +25,27 @@ RUN apt-get update \
     libgl1-mesa-glx \
     yasm \
     cmake \
+    python3 \
     && rm -rf /var/lib/apt/lists/*
 
 # Create a working directory.
 RUN mkdir /app
 WORKDIR /app
+
+
+COPY environment.yml /tmp/environment.yml
+
+ENV CONDA_DIR /opt/conda
+RUN wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda.sh && \
+    /bin/bash ~/miniconda.sh -b -p /opt/conda
+
+ENV PATH=$CONDA_DIR/bin:$PATH
+
+RUN conda init && conda env create -n clipenv --file /tmp/environment.yml
+RUN conda init && conda activate clipenv && \
+    pip install git+https://github.com/openai/CLIP.git && \
+    pip install open_clip_torch
+
 
 # Create a non-root user and switch to it.
 RUN adduser --disabled-password --gecos '' --shell /bin/bash user \
@@ -41,22 +57,5 @@ USER user
 ENV HOME=/home/user
 RUN mkdir $HOME/.cache $HOME/.config \
     && chmod -R 777 $HOME
-
-# install micromamba
-RUN curl -sL https://micro.mamba.pm/api/micromamba/linux-64/1.1.0 \
-    | sudo tar -xvj -C /usr/local bin/micromamba
-
-ENV MAMBA_EXE=/usr/local/bin/micromamba \
-    MAMBA_ROOT_PREFIX=/home/user/micromamba \
-    CONDA_PREFIX=/home/user/micromamba \
-    PATH=/home/user/micromamba/bin:$PATH
-
-# set up the base conda env by installing clip and friends.
-COPY environment.yml /app/environment.yml
-
-RUN micromamba create -qy -n base -f /app/environment.yml \
-    && rm /app/environment.yml \
-    && micromamba shell init --shell=bash --prefix="$MAMBA_ROOT_PREFIX" \
-    && micromamba clean -qya
 
 CMD ["/bin/bash"]
