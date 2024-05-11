@@ -41,8 +41,9 @@ RUN wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86
 
 ENV PATH=$CONDA_DIR/bin:$PATH
 
-RUN conda init && conda env create -n clipenv --file /tmp/environment.yml
-RUN conda init && conda activate clipenv && \
+RUN conda init
+RUN conda env create -n clipenv --file /tmp/environment.yml
+RUN conda activate clipenv && \
     pip install git+https://github.com/openai/CLIP.git && \
     pip install open_clip_torch
 
