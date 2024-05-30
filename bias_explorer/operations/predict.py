@@ -272,19 +272,15 @@ def run(conf):
     fface_df = dataloader.load_df(conf['Baseline'])
     sims_path = f"{preds_path}/similarities.json"
 
-    if not os.path.isfile(sims_path):
-        img_embs, txt_embs = dataloader.load_embs(
-            img_path=f"{embs_path}/generated_img_embs.pkl",
-            txt_path=f"{embs_path}/{label_name}_generated_txt_embs.pt")
-        print("Done")
+    img_embs, txt_embs = dataloader.load_embs(
+        img_path=f"{embs_path}/generated_img_embs.pkl",
+        txt_path=f"{embs_path}/{label_name}_generated_txt_embs.pt")
+    print("Done")
 
-        print("Starting predictions...")
-        sims_dict = get_sims_dict(dataloader.load_model(
-            conf), img_embs, prompts, txt_embs)
-        save_sims_dict(sims_dict, dest=sims_path)
-    else:
-        sims_dict = dataloader.load_json(sims_path)
-        print("Done")
+    print("Starting predictions...")
+    sims_dict = get_sims_dict(dataloader.load_model(
+        conf), img_embs, prompts, txt_embs)
+    save_sims_dict(sims_dict, dest=sims_path)
 
     sum_df = get_sum_synms(sims_dict, get_man_prompts(prompts))
     final_sum_df = generate_final_df(fface_df, sum_df)

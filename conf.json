@@ -6,14 +6,10 @@
     "Analyze": false,
     "Save_imgs": false
   },
-  "Model": "CLIP",
-  "Backbone": "ViT-L-14",
+  "Model": "openCLIP",
+  "Backbone": "ViT-g-14",
   "DataSource": [
-    "openai",
-    "laion400m_e31",
-    "laion2b_s32b_b82k",
-    "datacomp_xl_s13b_b90k",
-    "commonpool_xl_s13b_b90k"
+    "laion2b_s34b_b88k"
   ],
   "Target": "Gender",
   "Flags": {
@@ -24,8 +20,8 @@
   },
   "Top K": 1,
   "Metric": "accuracy",
-  "Baseline": "./data/fairface/fface_train.csv",
-  "Images": "/home/lucasmc/Documents/ufrgs/datasets/FairFace/train/",
+  "Baseline": "./data/fairface/fface_val.csv",
+  "Images": "/home/lazye/Documents/ufrgs/datasets/FairFace/val/",
   "Embeddings": "./data/fairface/embeddings",
   "Labels": "./data/fairface/labels/original_clip_labels.json",
   "Predictions": "./data/fairface/predictions",
