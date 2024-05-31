@@ -40,6 +40,18 @@ def filter_best_modes(reports):
     return filtered_reports
 
 
+def grab_topk(reports):
+    """Retrieve the top k row of reports
+
+    :param reports: dictionary with reports
+    :type reports: dict
+    """
+    filtered_reports = {}
+    for dsname, df in reports.items():
+        filtered_reports[dsname] = df.loc[df['Mode'] == 'Top 1'].squeeze()
+    return filtered_reports
+
+
 def run(conf):
     """Run the concatenation script
 
@@ -59,7 +71,8 @@ def run(conf):
 
     print("Collecting reports...")
     reps = collect_reports(ds_path, ln, metric)
-    best_reps = filter_best_modes(reps)
+    # best_reps = filter_best_modes(reps)
+    best_reps = grab_topk(reps)
 
     print("Concating...")
     report_df = pd.DataFrame(best_reps.values(), index=best_reps.keys())

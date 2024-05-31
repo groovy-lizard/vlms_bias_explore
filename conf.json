@@ -8,22 +8,20 @@
   },
   "Model": "openCLIP",
   "Backbone": "ViT-g-14",
-  "DataSource": [
-    "laion2b_s34b_b88k"
-  ],
+  "DataSource": ["laion2b_s34b_b88k"],
   "Target": "Gender",
   "Flags": {
     "no-baby": false,
-    "text-only": false,
+    "text-only": true,
     "multiple-k": false,
-    "concatenate": false
+    "concatenate": true
   },
   "Top K": 1,
   "Metric": "accuracy",
   "Baseline": "./data/fairface/fface_val.csv",
   "Images": "/home/lazye/Documents/ufrgs/datasets/FairFace/val/",
   "Embeddings": "./data/fairface/embeddings",
-  "Labels": "./data/fairface/labels/original_clip_labels.json",
+  "Labels": "./data/fairface/labels/age_race_gender.json",
   "Predictions": "./data/fairface/predictions",
   "Reports": "./data/fairface/reports"
 }
