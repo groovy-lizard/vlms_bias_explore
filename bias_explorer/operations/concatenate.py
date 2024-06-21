@@ -71,8 +71,8 @@ def run(conf):
 
     print("Collecting reports...")
     reps = collect_reports(ds_path, ln, metric)
-    # best_reps = filter_best_modes(reps)
-    best_reps = grab_topk(reps)
+    best_reps = filter_best_modes(reps)
+    # best_reps = grab_topk(reps)
 
     print("Concating...")
     report_df = pd.DataFrame(best_reps.values(), index=best_reps.keys())

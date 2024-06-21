@@ -13,10 +13,10 @@
   "Flags": {
     "no-baby": false,
     "text-only": true,
-    "multiple-k": false,
+    "multiple-k": true,
     "concatenate": true
   },
-  "Top K": 1,
+  "Top K": 21,
   "Metric": "accuracy",
   "Baseline": "./data/fairface/fface_val.csv",
   "Images": "/home/lazye/Documents/ufrgs/datasets/FairFace/val/",
