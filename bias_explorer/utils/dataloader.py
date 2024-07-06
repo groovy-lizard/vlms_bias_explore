@@ -88,6 +88,10 @@ def load_imgs(path):
     :return: list of image pathnames
     :rtype: list
     """
+    im_list = glob(path + "*.jpg")
+    if im_list == 0:
+        raise ValueError("No image found in folder, check path or image type")
+
     return glob(path + '*.jpg')
 
 

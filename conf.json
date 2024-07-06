@@ -1,25 +1,32 @@
 {
   "Operations": {
     "Generate": true,
-    "Predict": true,
-    "Report": true,
+    "Predict": false,
+    "Report": false,
     "Analyze": false,
     "Save_imgs": false
   },
   "Model": "openCLIP",
-  "Backbone": "ViT-g-14",
-  "DataSource": ["laion2b_s34b_b88k"],
+  "Backbone": "ViT-B-16",
+  "DataSource": [
+    "datacomp_m_s128m_b4k",
+    "commonpool_m_s128m_b4k",
+    "openai",
+    "laion400m_e32",
+    "datacomp_xl_s13b_b90k",
+    "laion2b_s34b_b79k"
+  ],
   "Target": "Gender",
   "Flags": {
     "no-baby": false,
-    "text-only": true,
-    "multiple-k": true,
-    "concatenate": true
+    "text-only": false,
+    "multiple-k": false,
+    "concatenate": false
   },
   "Top K": 21,
   "Metric": "accuracy",
   "Baseline": "./data/fairface/fface_val.csv",
-  "Images": "/home/lazye/Documents/ufrgs/datasets/FairFace/val/",
+  "Images": "/home/lucasmc/Documents/ufrgs/datasets/FairFace/val/",
   "Embeddings": "./data/fairface/embeddings",
   "Labels": "./data/fairface/labels/age_race_gender.json",
   "Predictions": "./data/fairface/predictions",

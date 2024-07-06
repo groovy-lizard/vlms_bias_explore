@@ -28,7 +28,8 @@ def concat_out_path(conf, root):
     out_path = f"{root_path}/{model_name}/{backbone}/{data_source}"
     if 'Embeddings' not in root:
         label_name = grab_label_name(conf['Labels'])
-        out_path = f"{out_path}/{label_name}"
+        target_name = conf['Target']
+        out_path = f"{out_path}/{target_name}_{label_name}"
     return out_path
 
 

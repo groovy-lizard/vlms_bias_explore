@@ -25,10 +25,10 @@ def batch_save(df, df_name, path, outdir):
 
 if __name__ == "__main__":
 
-    ROOT = "/home/lazye/Documents/ufrgs/mcs/clip/clip-bias-explore/\
+    ROOT = "/home/lucasmc/Documents/ufrgs/mcs/clip/clip-bias-explore/\
 fair-face-classification"
     RESULTS_PATH = ROOT + "/data/results"
-    IMG_PATH = "/home/lazye/Documents/ufrgs/mcs/datasets/FairFace/"
+    IMG_PATH = "/home/lucasmc/Documents/ufrgs/mcs/datasets/FairFace/"
 
     # top synm preds df
     topk_df = pd.read_csv(RESULTS_PATH+"/arg_top_synms.csv")
