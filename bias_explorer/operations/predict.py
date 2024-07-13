@@ -1,5 +1,6 @@
 """Evaluation module for comparisons between text and image embeddings"""
 from . import gender_predict
+from . import race_predict
 
 
 def run(conf):
@@ -12,6 +13,6 @@ def run(conf):
     """
     print("Initializing predictors...")
     predictors = {"Gender": gender_predict,
-                  "Race": 1,
+                  "Race": race_predict,
                   "Age": 1}
     predictors[conf['Target']].run(conf)

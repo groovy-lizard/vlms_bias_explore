@@ -1,26 +1,19 @@
 {
   "Operations": {
-    "Generate": true,
-    "Predict": false,
-    "Report": false,
+    "Generate": false,
+    "Predict": true,
+    "Report": true,
     "Analyze": false,
     "Save_imgs": false
   },
   "Model": "openCLIP",
-  "Backbone": "ViT-B-16",
-  "DataSource": [
-    "datacomp_m_s128m_b4k",
-    "commonpool_m_s128m_b4k",
-    "openai",
-    "laion400m_e32",
-    "datacomp_xl_s13b_b90k",
-    "laion2b_s34b_b79k"
-  ],
+  "Backbone": "ViT-H-14",
+  "DataSource": ["laion2b_s32b_b79k"],
   "Target": "Gender",
   "Flags": {
     "no-baby": false,
-    "text-only": false,
-    "multiple-k": false,
+    "text-only": true,
+    "multiple-k": true,
     "concatenate": false
   },
   "Top K": 21,

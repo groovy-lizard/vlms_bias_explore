@@ -142,7 +142,7 @@ def run(conf):
     model = dataloader.load_model(conf)
     label_name = system.grab_label_name(conf['Labels'])
 
-    prompts, _ = dataloader.load_txts(conf['Labels'])
+    prompts = dataloader.load_json(conf['Labels'])
     img_list = dataloader.load_imgs(conf['Images'])
     root_path = system.concat_out_path(conf, 'Embeddings')
     sims_path = f"{root_path}/similarities.json"

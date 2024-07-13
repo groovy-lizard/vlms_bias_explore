@@ -1,69 +1,7 @@
 """Evaluation module for comparisons between text and image embeddings"""
-import json
-import torch
-import numpy as np
 import pandas as pd
 from ..utils import dataloader
 from ..utils import system
-
-
-def get_similarities(model, img_embeddings, txt_embeddings):
-    """Grab similarity between text and image embeddings
-
-    :param model: ict containing preprocessing, device and model objects
-    :type model: dict[obj]
-    :param img_embeddings: image embeddings
-    :type img_embeddings: torch.tensor
-    :param txt_embeddings: text embeddings
-    :type txt_embeddings: torch.tensor
-    :return: similarity between image and text embeddings
-    :rtype: float
-    """
-    image_features = torch.from_numpy(img_embeddings).to(model["Device"])
-    similarity = 100.0 * image_features @ txt_embeddings.T
-
-    return similarity
-
-
-def get_sims_dict(model, img_embeddings, txt_prompts, txt_embeddings):
-    """Generate dictionary with filename and similarities
-    scores between text prompts
-
-    :param model: dict containig preprocessing, device and model objects
-    :type model: dict[obj]
-    :param img_embeddings: image embeddings
-    :type img_embeddings: torch.tensor
-    :param txt_prompts: textual prompts
-    :type txt_prompts: json
-    :param txt_embeddings: text embeddings
-    :type txt_embeddings: torch.tensor
-    :return: similarities dictionary
-    :rtype: dict
-    """
-    final_dict = {}
-    for _, emb in img_embeddings.iterrows():
-        name = emb['file']
-        img_features = emb['embeddings']
-        img_sims = get_similarities(model, img_features, txt_embeddings)
-        s_dict = {}
-        for label, score in zip(txt_prompts, img_sims[0]):
-            s_dict[label] = score.cpu().numpy().item()
-        final_dict[name] = s_dict
-    return final_dict
-
-
-def save_sims_dict(sims_dict, dest):
-    """Save similarity dictionary
-
-    :param sims_dict: similarity dictionary to be saved
-    :type sims_dict: dict
-    :param dest: destination folder path
-    :type dest: str
-    """
-    print('Saving similarities dictionary to ' + dest)
-    with open(dest, 'w', encoding='utf-8') as ff:
-        json.dump(obj=sims_dict, fp=ff, indent=4)
-    print('Done!')
 
 
 def split_man_woman(label_dict):
@@ -126,27 +64,6 @@ def get_top_k_winner(sims_dict, k):
     return pd.DataFrame(data=top_k_dict)
 
 
-def get_top_synm(sims_dict):
-    """Grab most similar synonym
-
-    :param sims_dict: similarities dictionary
-    :type sims_dict: dict
-    :return: dataframe with filename and gender prediction
-    :rtype: pd.DataFrame
-    """
-    files = sims_dict.keys()
-    wins = []
-    for val in sims_dict.values():
-        scores_list = list(val.values())
-        label_list = list(val.keys())
-        np_scores = np.asarray(scores_list)
-        windex = np.where(np_scores == np_scores.max())[0][0]
-        wins.append(label_list[windex])
-
-    top_synm_dict = {'file': files, 'gender_preds': wins}
-    return pd.DataFrame(data=top_synm_dict)
-
-
 def get_man_prompts(prompts):
     """get a list of man prompts
 
@@ -163,15 +80,7 @@ def get_man_prompts(prompts):
 
 
 def synm_to_gender(synm, man_prompts):
-    """Mapper function to eval between Male and Female synonyms
-
-    :param synm: the synonym to be evaluated
-    :type synm: str
-    :param man_prompts: list of male prompts
-    :type man_prompts: list
-    :return: synonym corresponding gender
-    :rtype: str
-    """
+    """Mapper function to eval between Male and Female synonyms"""
     if synm in man_prompts:
         return 'Male'
     return 'Female'
@@ -223,43 +132,15 @@ def get_sum_synms(sims_dict, man_prompts):
     return pd.DataFrame(data=sum_dict)
 
 
-def generate_final_df(fface_df, scores_df):
-    """Join the winning class df with the original dataset df
-
-    :param fface_df: fairFace dataset df
-    :type fface_df: pd.DataFrame
-    :param scores_df: predictions df
-    :type scores_df: pd.DataFrame
-    :return: fairFace dataset df with new 'prediction' column
-    :rtype: pd.DataFrame
-    """
-    new_df = fface_df.set_index('file').join(scores_df.set_index('file'))
-    new_df.drop(columns=['service_test'], inplace=True)
-    return new_df
-
-
-def save_df(df, out):
-    """Save final dataframe to out folder as csv
-
-    :param df: final fairface dataframe
-    :type df: pd.DataFrame
-    :param out: output destination folder
-    :type out: str
-    """
-    print(f'Saving dataframe to {out}')
-    df.to_csv(out)
-    print('Done!')
-
-
 def run(conf):
-    """Run the Evaluator module
+    """Run the gender predictor module
 
     :param conf: config file
     :type conf: dict
     :param model: model utilities object
     :type model: dict[obj]
     """
-    print("Initializing predictor...")
+    print("Initializing gender predictor...")
     print("Prepping output folders...")
     embs_path = system.concat_out_path(conf, 'Embeddings')
     preds_path = system.concat_out_path(conf, 'Predictions')
@@ -267,28 +148,29 @@ def run(conf):
     system.prep_folders(preds_path)
 
     print("Loading data...")
-    prompts, _ = dataloader.load_txts(conf['Labels'])
+    prompts = dataloader.load_json(conf['Labels'])
     fface_df = dataloader.load_df(conf['Baseline'])
-
-    print("Starting predictions...")
     sims_dict = dataloader.load_json(sims_path)
 
+    print("Starting predictions...")
     sum_df = get_sum_synms(sims_dict, get_man_prompts(prompts))
-    final_sum_df = generate_final_df(fface_df, sum_df)
-    save_df(df=final_sum_df, out=f"{preds_path}/sum_synms.csv")
+    final_avg_df = dataloader.generate_final_df(fface_df, sum_df)
+    dataloader.save_df(
+        df=final_avg_df, out=f"{preds_path}/gender_avg_preds.csv")
 
     if conf['Flags']['multiple-k']:
         max_k = conf['Top K']
         for k in range(1, max_k+1):
             top_df = get_top_k_winner(sims_dict, k)
-            final_bin_top_df = generate_final_df(fface_df, top_df)
-            save_df(df=final_bin_top_df,
-                    out=f"{preds_path}/top_{k}_synms.csv")
+            final_bin_top_df = dataloader.generate_final_df(fface_df, top_df)
+            dataloader.save_df(df=final_bin_top_df,
+                               out=f"{preds_path}/" +
+                               f"gender_top_{str.zfill(str(k), 2)}_synms.csv")
     else:
         k = conf['Top K']
         top_df = get_top_k_winner(sims_dict, k)
-        final_bin_top_df = generate_final_df(fface_df, top_df)
-        save_df(df=final_bin_top_df,
-                out=f"{preds_path}/top_{k}_synms.csv")
+        final_bin_top_df = dataloader.generate_final_df(fface_df, top_df)
+        dataloader.save_df(df=final_bin_top_df,
+                           out=f"{preds_path}/gender_top_{k}_synms.csv")
 
     print("Predictions finished")

@@ -52,21 +52,6 @@ def load_model(conf):
     return model_dict
 
 
-def load_txts(path):
-    """Loads text labels from path
-
-    :param path: path to json file
-    :type path: str
-    :return: prompts and labels from json file
-    :rtype: tuple
-    """
-    with open(path, encoding='utf-8') as f:
-        data = json.load(f)
-    prompts = list(data.values())
-    labels = list(data.keys())
-    return (prompts, labels)
-
-
 def load_json(path):
     """Load json from path and returns its data
 
@@ -119,3 +104,25 @@ def load_df(df_path):
     :rtype: pd.DataFrame
     """
     return pd.read_csv(df_path)
+
+
+def generate_final_df(fface_df, scores_df):
+    """Join the winning class df with the original dataset df
+
+    :param fface_df: fairFace dataset df
+    :type fface_df: pd.DataFrame
+    :param scores_df: predictions df
+    :type scores_df: pd.DataFrame
+    :return: fairFace dataset df with new 'prediction' column
+    :rtype: pd.DataFrame
+    """
+    new_df = fface_df.set_index('file').join(scores_df.set_index('file'))
+    new_df.drop(columns=['service_test'], inplace=True)
+    return new_df
+
+
+def save_df(df, out):
+    """Save final dataframe to out folder as csv"""
+    print(f'Saving dataframe to {out}')
+    df.to_csv(out)
+    print('Done!')
