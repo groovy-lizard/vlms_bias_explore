@@ -145,7 +145,7 @@ def run(conf):
     prompts = dataloader.load_json(conf['Labels'])
     img_list = dataloader.load_imgs(conf['Images'])
     root_path = system.concat_out_path(conf, 'Embeddings')
-    sims_path = f"{root_path}/similarities.json"
+    sims_path = f"{root_path}/{label_name}_similarities.json"
 
     system.prep_folders(root_path)
     img_out = root_path + '/generated_img_embs.pkl'

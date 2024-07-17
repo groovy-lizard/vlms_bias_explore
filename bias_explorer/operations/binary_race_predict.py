@@ -1,4 +1,4 @@
-"""Race label predictor"""
+"""Binary Race label predictor"""
 import pandas as pd
 from ..utils import dataloader
 from ..utils import system
@@ -8,12 +8,7 @@ def new_race_dict():
     """Generate an empty race score dictionary"""
     rd = {
         "White": 0,
-        "Black": 0,
-        "Indian": 0,
-        "Latino_Hispanic": 0,
-        "Southeast Asian": 0,
-        "East Asian": 0,
-        "Middle Eastern": 0
+        "Non-White": 0
     }
 
     return rd
@@ -23,25 +18,26 @@ def new_race_list():
     """Generate an empty race list dictionary"""
     rd = {
         "White": [],
-        "Black": [],
-        "Indian": [],
-        "Latino_Hispanic": [],
-        "Southeast Asian": [],
-        "East Asian": [],
-        "Middle Eastern": []
+        "Non-White": []
     }
 
     return rd
 
 
+def binary_transform_df(df):
+    """Transform races into white and non-white"""
+    non_white_races = ['Latino_Hispanic', 'East Asian',
+                       'Indian', 'Black', 'Southeast Asian', 'Middle Eastern']
+
+    df['race'].replace(non_white_races, 'Non-White', inplace=True)
+    return df
+
+
 def get_race_from_prompt(prompt):
     """Return the race label from given prompt"""
-    race_dict = new_race_dict()
-    for race in race_dict:
-        if race.lower().replace("_", " ") in prompt:
-            return race
-    print(f"error prompt: {prompt}")
-    return False
+    if "white" in prompt:
+        return "White"
+    return "Non-White"
 
 
 def get_k_score(label_list, k):
@@ -104,7 +100,7 @@ def filter_sims_dict(sims_dict):
 
 
 def run(conf):
-    """Run the race predictor module"""
+    """Run the binary race predictor module"""
     print("Initializing race predictor...")
     print("Prepping output folders...")
     embs_path = system.concat_out_path(conf, 'Embeddings')
@@ -115,13 +111,14 @@ def run(conf):
 
     print("Loading data...")
     fface_df = dataloader.load_df(conf['Baseline'])
+    fface_df = binary_transform_df(fface_df)
     sims_dict = dataloader.load_json(sims_path)
     sims_dict = filter_sims_dict(sims_dict)
     print("Starting predictions...")
     avg_df = get_avg_preds(sims_dict)
     final_avg_df = dataloader.generate_final_df(fface_df, avg_df)
     dataloader.save_df(
-        df=final_avg_df, out=f"{preds_path}/race_avg_preds.csv")
+        df=final_avg_df, out=f"{preds_path}/binary_race_avg_preds.csv")
 
     if conf['Flags']['multiple-k']:
         max_k = conf['Top K']
@@ -130,10 +127,11 @@ def run(conf):
             final_bin_top_df = dataloader.generate_final_df(fface_df, top_df)
             dataloader.save_df(df=final_bin_top_df,
                                out=f"{preds_path}/" +
-                               f"race_top_{str.zfill(str(k), 2)}_synms.csv")
+                               f"binary_race_top_{str.zfill(str(k), 2)}_synms \
+                                   .csv")
     else:
         k = conf['Top K']
         top_df = get_top_k_winner(sims_dict, k)
         final_bin_top_df = dataloader.generate_final_df(fface_df, top_df)
         dataloader.save_df(df=final_bin_top_df,
-                           out=f"{preds_path}/race_top_{k}_synms.csv")
+                           out=f"{preds_path}/binary_race_top_{k}_synms.csv")
