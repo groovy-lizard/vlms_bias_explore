@@ -1,0 +1,31 @@
+{
+    "ViT-B-16": [
+        "datacomp_l_s1b_b8k",
+        "openai",
+        "laion400m_e32",
+        "datacomp_xl_s13b_b90k",
+        "commonpool_l_s1b_b8k",
+        "laion2b_s34b_b88k"
+    ],
+    "ViT-B-32": [
+        "datacomp_m_s128m_b4k",
+        "commonpool_m_s128m_b4k",
+        "openai",
+        "laion400m_e32",
+        "datacomp_xl_s13b_b90k",
+        "laion2b_s34b_b79k"
+    ],
+    "ViT-L-14": [
+        "openai",
+        "laion400m_e32",
+        "datacomp_xl_s13b_b90k",
+        "laion2b_s32b_b82k",
+        "commonpool_xl_s13b_b90k"
+    ],
+    "ViT-H-14": [
+        "laion2b_s32b_b79k"
+    ],
+    "ViT-g-14": [
+        "laion2b_s34b_b88k"
+    ]
+}

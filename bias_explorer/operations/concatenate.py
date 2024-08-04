@@ -66,16 +66,19 @@ def run(conf):
     report_path = conf['Reports']
 
     ds_path = f"{report_path}/{model}/{backbone}"
-    ln = system.grab_label_name(conf['Labels'])
-    out_path = f"{report_path}/{model}/{backbone}_{metric}_{ln}.csv"
+    label = system.grab_label_name(conf['Labels'])
+    ln = f"{conf['Target']}_{label}"
+    final_path = f"{conf['EDA']}/{conf['Target']}_classification"
+    out_path = f"{final_path}/{backbone}_data_scaling.csv"
 
     print("Collecting reports...")
     reps = collect_reports(ds_path, ln, metric)
-    best_reps = filter_best_modes(reps)
-    # best_reps = grab_topk(reps)
+    # best_reps = filter_best_modes(reps)
+    best_reps = grab_topk(reps)
 
     print("Concating...")
     report_df = pd.DataFrame(best_reps.values(), index=best_reps.keys())
+    report_df = report_df.drop(columns=['Mode'])
     print("Saving...")
-    report_df.to_csv(out_path)
+    report_df.to_csv(out_path, index_label="datasource")
     print("Done!")

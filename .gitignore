@@ -2,6 +2,7 @@
 data/fairface/embeddings
 data/fairface/predictions
 data/fairface/reports
+*.pkl
 
 
 # Byte-compiled / optimized / DLL files

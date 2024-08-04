@@ -8,19 +8,6 @@ from .. import operations
 from .. import models
 
 
-def load_config(json_path='./conf.json'):
-    """Load configuration file
-
-    :param json_path: config file path, defaults to "./conf.json"
-    :type json_path: str, optional
-    :return: configuration file
-    :rtype: dict
-    """
-    with open(json_path, encoding='utf-8') as f:
-        data = json.load(f)
-    return data
-
-
 def load_operations():
     """Load operations modules
 
@@ -33,6 +20,7 @@ def load_operations():
     ops['Report'] = operations.report
     ops['Concatenate'] = operations.concatenate
     ops['Save_imgs'] = operations.save_imgs
+    ops['Analyze'] = operations.analyze
     return ops
 
 
