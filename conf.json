@@ -1,9 +1,9 @@
 {
   "Operations": {
     "Generate": false,
-    "Predict": true,
-    "Report": true,
-    "Analyze": false,
+    "Predict": false,
+    "Report": false,
+    "Analyze": true,
     "Save_imgs": false
   },
   "Model": "openCLIP",
@@ -15,14 +15,14 @@
     "text-only": true,
     "multiple-k": true,
     "concatenate": false,
-    "all-models": true
+    "all-models": false
   },
   "Top K": 21,
   "Metric": "accuracy",
   "Baseline": "./data/fairface/fface_val.csv",
   "Images": "/home/lucasmc/Documents/ufrgs/datasets/FairFace/val/",
   "Embeddings": "./data/fairface/embeddings",
-  "Labels": "./data/fairface/labels/age_race_gender.json",
+  "Labels": "./data/fairface/labels/original_clip_labels.json",
   "Predictions": "./data/fairface/predictions",
   "Reports": "./data/fairface/reports",
   "EDA": "./data/fairface/eda"

@@ -1,6 +1,6 @@
 """Analyzer module to generate final tabular analytics"""
 import pandas as pd
-from bias_explorer.utils import dataloader, system
+from bias_explorer.utils import dataloader
 
 
 def race_gap(df: pd.DataFrame) -> pd.Series:
@@ -30,7 +30,7 @@ def prep_df(path: str, arch: str) -> pd.DataFrame:
     :rtype: pd.DataFrame
     """
     df = pd.read_csv(path)
-    df = df[df['Mode'] == 'Top 1']
+    df = df[df['Mode'] == 'Top 01']
     df = df.rename(columns={'Unnamed: 0': 'Model'})
     df['Model'] = df['Model'].map({1: arch})
     df = df.drop(columns=['Mode'])
@@ -43,7 +43,7 @@ def model_scaling_analysis(conf: dict):
     for laion2B datasource"""
     print("Performing model scaling analysis...")
     report_path = f"{conf['Reports']}/{conf['Model']}"
-    label_name = system.grab_label_name(conf['Labels'])
+    label_name = "original_clip_labels"
     target_label_folder = f"{conf['Target']}_{label_name}"
     archs_and_dsources = dataloader.load_json("./archs_and_datasources.json")
     df_list = []
@@ -84,8 +84,10 @@ def get_df_list(conf: dict, label_name: str) -> pd.DataFrame:
         results_df['Race Gap'] = rgap
         if label_name == "age_race_gender":
             results_df['Prompt'] = "RAGP"
-        else:
+        elif label_name == "original_clip_labels":
             results_df['Prompt'] = "RGP"
+        else:
+            results_df['Prompt'] = "RP"
         df_list.append(results_df)
     df = pd.concat(df_list)
     return df
@@ -96,7 +98,8 @@ def prompt_analysis(conf: dict):
     print("Performing prompt comparison analysis...")
     ragp_df = get_df_list(conf, "age_race_gender")
     rgp_df = get_df_list(conf, "original_clip_labels")
-    final_df = pd.concat([ragp_df, rgp_df])
+    rp_df = get_df_list(conf, "raw_race_labels")
+    final_df = pd.concat([ragp_df, rgp_df, rp_df])
     final_df = final_df.sort_values('Model', ascending=True)
     final_df.to_csv(
         f"{conf['EDA']}/{conf['Target']}_classification/prompt_comparison.csv")
