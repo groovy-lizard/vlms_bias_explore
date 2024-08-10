@@ -1,9 +1,9 @@
 {
   "Operations": {
     "Generate": false,
-    "Predict": false,
-    "Report": false,
-    "Analyze": true,
+    "Predict": true,
+    "Report": true,
+    "Analyze": false,
     "Save_imgs": false
   },
   "Model": "openCLIP",
@@ -13,11 +13,11 @@
   "Flags": {
     "no-baby": false,
     "text-only": true,
-    "multiple-k": false,
+    "multiple-k": true,
     "concatenate": false,
-    "all-models": false
+    "all-models": true
   },
-  "Top K": 1,
+  "Top K": 21,
   "Metric": "accuracy",
   "Baseline": "./data/fairface/fface_val.csv",
   "Images": "/home/lucasmc/Documents/ufrgs/datasets/FairFace/val/",
