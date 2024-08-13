@@ -1,3 +1,4 @@
+"""Run analyzer directly"""
 from bias_explorer.utils import dataloader
 from bias_explorer.operations import analyze
 

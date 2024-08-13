@@ -1,6 +1,7 @@
 """Analyzer module to generate final tabular analytics"""
 import pandas as pd
 from bias_explorer.utils import dataloader
+from bias_explorer.utils import system
 
 
 def race_gap(df: pd.DataFrame) -> pd.Series:
@@ -43,7 +44,7 @@ def model_scaling_analysis(conf: dict):
     for laion2B datasource"""
     print("Performing model scaling analysis...")
     report_path = f"{conf['Reports']}/{conf['Model']}"
-    label_name = "original_clip_labels"
+    label_name = system.grab_label_name(conf['Labels'])
     target_label_folder = f"{conf['Target']}_{label_name}"
     archs_and_dsources = dataloader.load_json("./archs_and_datasources.json")
     df_list = []
@@ -60,8 +61,9 @@ def model_scaling_analysis(conf: dict):
         results_df['Race Gap'] = rgap
         df_list.append(results_df)
     df = pd.concat(df_list)
+    root_path = f"{conf['EDA']}/{conf['Target']}"
     df.to_csv(
-        f"{conf['EDA']}/{conf['Target']}_classification/model_scaling.csv")
+        f"{root_path}_classification/model_scaling_{label_name}.csv")
     print("Done!")
 
 
