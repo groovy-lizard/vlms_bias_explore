@@ -1,28 +1,28 @@
 {
   "Operations": {
-    "Generate": true,
-    "Predict": true,
-    "Report": true,
-    "Analyze": false,
+    "Generate": false,
+    "Predict": false,
+    "Report": false,
+    "Analyze": true,
     "Save_imgs": false
   },
   "Model": "openCLIP",
-  "Backbone": "ViT-B-32",
+  "Backbone": "ViT-B-16",
   "DataSource": ["datacomp_s_s13m_b4k"],
   "Target": "Race",
   "Flags": {
     "no-baby": false,
     "text-only": true,
     "multiple-k": true,
-    "concatenate": false,
-    "all-models": false
+    "all-models": true,
+    "all-sources": false
   },
   "Top K": 21,
   "Metric": "accuracy",
   "Baseline": "./data/fairface/fface_val.csv",
   "Images": "/home/lucasmc/Documents/ufrgs/datasets/FairFace/val/",
   "Embeddings": "./data/fairface/embeddings",
-  "Labels": "./data/fairface/labels/raw_race_labels.json",
+  "Labels": "./data/fairface/labels/original_clip_labels.json",
   "Predictions": "./data/fairface/predictions",
   "Reports": "./data/fairface/reports",
   "EDA": "./data/fairface/eda"

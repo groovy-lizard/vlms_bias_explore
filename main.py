@@ -15,8 +15,17 @@ def run_all_models(conf, ops):
             for operation in conf['Operations'].items():
                 if operation[1]:
                     ops[operation[0]].run(temp_conf)
-        if conf['Flags']['concatenate']:
-            ops['Concatenate'].run(temp_conf)
+
+
+def run_all_sources(conf, ops):
+    """Run operations on single model but all target datasources"""
+    arch_dict = dataloader.load_json("./archs_and_datasources.json")
+    for datasource in arch_dict[conf['Backbone']]:
+        temp_conf = conf.copy()
+        temp_conf['DataSource'] = datasource
+        for operation in conf['Operations'].items():
+            if operation[1]:
+                ops[operation[0]].run(temp_conf)
 
 
 def run_openai_clip(conf, ops):
@@ -35,8 +44,6 @@ def run_open_clip(conf, ops):
         for operation in conf['Operations'].items():
             if operation[1]:
                 ops[operation[0]].run(temp_conf)
-    if conf['Flags']['concatenate']:
-        ops['Concatenate'].run(conf)
 
 
 def main():
@@ -46,6 +53,8 @@ def main():
     if conf['Model'] == 'openCLIP':
         if conf['Flags']['all-models']:
             run_all_models(conf, ops)
+        elif conf['Flags']['all-sources']:
+            run_all_sources(conf, ops)
         else:
             run_open_clip(conf, ops)
     else:

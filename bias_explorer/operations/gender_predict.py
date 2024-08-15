@@ -144,7 +144,8 @@ def run(conf):
     print("Prepping output folders...")
     embs_path = system.concat_out_path(conf, 'Embeddings')
     preds_path = system.concat_out_path(conf, 'Predictions')
-    sims_path = f"{embs_path}/similarities.json"
+    label_name = system.grab_label_name(conf['Labels'])
+    sims_path = f"{embs_path}/{label_name}_similarities.json"
     system.prep_folders(preds_path)
 
     print("Loading data...")

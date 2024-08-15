@@ -1,0 +1,2 @@
+datasource,Mode,accuracy,0-2,3-9,10-19,20-29,30-39,40-49,50-59,60-69,more than 70,Male,Female,East Asian,White,Latino_Hispanic,Southeast Asian,Black,Indian,Middle Eastern
+laion2b_s34b_b88k,Avg Sum,0.685,0.6281,0.6512,0.7197,0.6867,0.6923,0.6918,0.6608,0.6822,0.7203,0.6773,0.6935,0.6368,0.7257,0.4615,0.7682,0.8689,0.7197,0.5988
