@@ -1,2 +1,2 @@
-datasource,Mode,accuracy,0-2,3-9,10-19,20-29,30-39,40-49,50-59,60-69,more than 70,Male,Female,East Asian,White,Latino_Hispanic,Southeast Asian,Black,Indian,Middle Eastern
-laion2b_s34b_b88k,Top 02,0.6906,0.6382,0.6556,0.724,0.6967,0.6979,0.6925,0.6696,0.6822,0.678,0.6828,0.6993,0.6452,0.7103,0.4633,0.7583,0.8869,0.7454,0.6195
+datasource,Mode,accuracy,0-2,3-9,10-19,20-29,30-39,40-49,50-59,60-69,more than 70,Male,Female,East Asian,White,Latino_Hispanic,Southeast Asian,Black,Indian,Middle Eastern,Race Gap
+laion2b_s34b_b88k,Top 02,0.6906,0.6382,0.6556,0.724,0.6967,0.6979,0.6925,0.6696,0.6822,0.678,0.6828,0.6993,0.6452,0.7103,0.4633,0.7583,0.8869,0.7454,0.6195,0.2265

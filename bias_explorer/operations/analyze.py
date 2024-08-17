@@ -217,6 +217,7 @@ def top_k_analysis(conf):
 
     print("Generating Top K analysis...")
     report_df = pd.DataFrame(best_reps.values(), index=best_reps.keys())
+    report_df['Race Gap'] = race_gap(report_df)
     print(f"Saving to {out_path}")
     report_df.to_csv(out_path, index_label="datasource")
     print("Done!")

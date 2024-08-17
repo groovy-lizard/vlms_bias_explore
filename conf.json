@@ -22,7 +22,7 @@
   "Baseline": "./data/fairface/fface_val.csv",
   "Images": "/home/lucasmc/Documents/ufrgs/datasets/FairFace/val/",
   "Embeddings": "./data/fairface/embeddings",
-  "Labels": "./data/fairface/labels/original_clip_labels.json",
+  "Labels": "./data/fairface/labels/age_race_gender.json",
   "Predictions": "./data/fairface/predictions",
   "Reports": "./data/fairface/reports",
   "EDA": "./data/fairface/eda"
