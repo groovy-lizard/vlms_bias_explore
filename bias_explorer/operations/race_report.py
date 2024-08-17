@@ -188,4 +188,11 @@ def run(conf):
 
     rep_df = pd.DataFrame(rep_dict)
     rep_df.to_csv(out_csv)
+
+    agg_df = dataloader.load_df(f"{preds}/race_clip_aggregation.csv")
+    rep_dict = get_empty_report_dict(agg_df, metric_name)
+    rep_dict = gen_dict_report(
+        agg_df, "openAI Aggregation", metric_name, rep_dict)
+    rep_df = pd.DataFrame(rep_dict)
+    rep_df.to_csv(f"{report_path}/{metric_name}_aggregation_report.csv")
     print("Done!")

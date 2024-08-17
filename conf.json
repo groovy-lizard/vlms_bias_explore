@@ -7,14 +7,16 @@
     "Save_imgs": false
   },
   "Model": "openCLIP",
-  "Backbone": "ViT-B-16",
-  "DataSource": ["datacomp_s_s13m_b4k"],
+  "Backbone": "ViT-g-14",
+  "DataSource": [
+    "laion2b_s34b_b88k"
+  ],
   "Target": "Race",
   "Flags": {
     "no-baby": false,
     "text-only": true,
-    "multiple-k": true,
-    "all-models": true,
+    "multiple-k": false,
+    "all-models": false,
     "all-sources": false
   },
   "Top K": 21,

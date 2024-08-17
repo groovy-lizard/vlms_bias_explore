@@ -1,18 +1,13 @@
 """Analyzer module to generate final tabular analytics"""
 import os
+import glob
 import pandas as pd
 from bias_explorer.utils import dataloader
 from bias_explorer.utils import system
 
 
 def race_gap(df: pd.DataFrame) -> pd.Series:
-    """Compute race gap (mean - min)
-
-    :param df: input dataframe
-    :type df: pd.DataFrame
-    :return: computed gap value
-    :rtype: pd.Series
-    """
+    """Compute race gap (mean - min)"""
     race_list = ['East Asian', 'White', 'Latino_Hispanic',
                  'Southeast Asian', 'Black', 'Indian', 'Middle Eastern']
     race_df = df[race_list]
@@ -22,15 +17,7 @@ def race_gap(df: pd.DataFrame) -> pd.Series:
 
 
 def prep_df(path: str, arch: str) -> pd.DataFrame:
-    """Read and prepare dataframe
-
-    :param path: path to csv file
-    :type path: str
-    :param arch: current architecture name
-    :type arch: str
-    :return: dataframe read from csv file with arch name
-    :rtype: pd.DataFrame
-    """
+    """Read and prepare dataframe"""
     df = pd.read_csv(path)
     df = df[df['Mode'] == 'Top 01']
     df = df.rename(columns={'Unnamed: 0': 'Model'})
@@ -68,22 +55,32 @@ def get_df_list(conf: dict, label_name: str) -> pd.DataFrame:
     return df
 
 
-def collect_reports(ds_path, ln, metric):
-    """Collect reports from all datasources
+def collect_analysis(conf):
+    """Collect top-k analysis reports"""
+    eda_path = conf['EDA']
+    eda_path = eda_path + f"/{conf['Target']}_classification"
+    label_name = system.grab_label_name(conf['Labels'])
+    eda_path = eda_path + f"/{label_name}"
+    eda_list = glob.glob(f"{eda_path}/*top_k*")
+    df_list = [(system.grab_back_bone(eda_file),
+                dataloader.load_df(eda_file))
+               for eda_file in eda_list]
+    df_dict = {}
+    for backbone, df in df_list:
+        df_dict[backbone] = df
+    return df_dict
 
-    :param ds_path: path to datasources root folder
-    :type ds_path: str
-    :param ln: label name
-    :type ln: str
-    :param metric: metric name
-    :type metric: str
-    :return: dictionary with datasource: dataframe
-    :rtype: dict
-    """
+
+def collect_reports(ds_path, ln, metric, agg=False):
+    """Collect reports from all datasources"""
     ds_list = os.listdir(ds_path)
     reports = {}
     for dsource in ds_list:
-        report_path = f"{ds_path}/{dsource}/{ln}/{metric}_report.csv"
+        if agg:
+            report_path = f"{ds_path}/{dsource}/{ln}/{metric}"
+            report_path = report_path + "_aggregation_report.csv"
+        else:
+            report_path = f"{ds_path}/{dsource}/{ln}/{metric}_report.csv"
         ds_df = dataloader.load_df(report_path)
         ds_df = ds_df.drop(columns=['Unnamed: 0'])
         reports[dsource] = ds_df
@@ -91,13 +88,7 @@ def collect_reports(ds_path, ln, metric):
 
 
 def filter_best_modes(reports):
-    """Retrieve roll of the best prediciton mode
-
-    :param reports: dictionary with reports
-    :type reports: dict
-    :return: a filtered report with only best row
-    :rtype: dict
-    """
+    """Retrieve roll of the best prediciton mode"""
     filtered_reports = {}
     for dsname, df in reports.items():
         filtered_reports[dsname] = df.loc[df['accuracy'].idxmax()]
@@ -105,11 +96,7 @@ def filter_best_modes(reports):
 
 
 def grab_top_01(reports):
-    """Retrieve the top k row of reports
-
-    :param reports: dictionary with reports
-    :type reports: dict
-    """
+    """Retrieve the top k row of reports"""
     filtered_reports = {}
     for dsname, df in reports.items():
         filtered_reports[dsname] = df.loc[df['Mode'] == 'Top 01'].squeeze()
@@ -161,13 +148,7 @@ def prompt_analysis(conf: dict):
 
 
 def data_scaling_analysis(conf):
-    """Run the concatenation script
-
-    :param conf: configuration dictionary
-    :type conf: dict
-    :param _: unused model
-    :type _: None
-    """
+    """Run the concatenation script"""
     model = conf['Model']
     backbone = conf['Backbone']
     metric = conf['Metric']
@@ -193,13 +174,7 @@ def data_scaling_analysis(conf):
 
 
 def top_k_analysis(conf):
-    """Run the concatenation script
-
-    :param conf: configuration dictionary
-    :type conf: dict
-    :param _: unused model
-    :type _: None
-    """
+    """Run the concatenation script"""
     model = conf['Model']
     backbone = conf['Backbone']
     metric = conf['Metric']
@@ -223,6 +198,10 @@ def top_k_analysis(conf):
     print("Done!")
 
 
+def aggregation_analysis(conf):
+    """Compare top-k vs openAI's aggregation"""
+
+
 def prep_eda_folders(conf):
     """Create EDA folder tree if not exists"""
     label = system.grab_label_name(conf['Labels'])
@@ -234,6 +213,6 @@ def run(conf):
     """Run the analyzer module"""
     prep_eda_folders(conf)
     model_scaling_analysis(conf)
-    prompt_analysis(conf)
     data_scaling_analysis(conf)
+    prompt_analysis(conf)
     top_k_analysis(conf)

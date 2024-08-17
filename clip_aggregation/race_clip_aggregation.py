@@ -1,44 +1,51 @@
+"""Original CLIP aggregation prediction"""
+import json
 import torch
 from tqdm import tqdm
 import pandas as pd
 import open_clip
 
-model_name = "ViT-L-14-336"
-data_source = "openai"
-preds_path = f"clip_aggregation_preds_{model_name}_{data_source}.csv"
-report_path = f"clip_aggregation_report_{model_name}_{data_source}.csv"
-embs_path = "./data/fairface/embeddings/openCLIP"
-img_path = f"{embs_path}/{model_name}/{data_source}/generated_img_embs.pkl"
-fface_path = "./data/fairface/fface_val.csv"
-device = "cuda" if torch.cuda.is_available() else "cpu"
-img_embs = pd.read_pickle(img_path)
-fface_df = pd.read_csv(fface_path)
-model, _, preprocessing = open_clip.create_model_and_transforms(
-    model_name, pretrained=data_source, device=device)
 
-ours_race_clip_templates = [
-    'a photo of a {} man',
-    'a photo of a {} woman',
-    'a photo of a young {} man',
-    'a photo of a young {} woman',
-    'a photo of a middle-aged {} man',
-    'a photo of a middle-aged {} woman',
-    'a photo of an old {} man',
-    'a photo of an old {} woman'
-]
+def load_json(path):
+    """Load json from path and returns its data
 
-original_race_clip_templates = [
-    'a photo of a {} man',
-    'a photo of a {} woman'
-]
-
-race_classes = ["black", "indian", "latino",
-                "middle eastern", "southeast asian", "east asian", "white"]
-preds_classes = ['Black', 'Indian', 'Latino_Hispanic',
-                 'Middle Eastern', 'Southeast Asian', 'East Asian', 'White']
+    :param path: json filepath
+    :type path: str
+    :return: json file from path
+    :rtype: dict
+    """
+    with open(path, encoding='utf-8') as f:
+        data = json.load(f)
+    return data
 
 
-def zeroshot_classifier(classnames, templates):
+def grab_label_name(label_filename):
+    """Grab the label name from the full filename
+
+    :param label_filename: the label filename from conf
+    :type label_filename: str
+    :return: the label name split from filename
+    :rtype: str
+    """
+    label_name = label_filename.split('/')[-1].split('.')[0]
+    return label_name
+
+
+def create_final_path(conf, root_path, filename):
+    """Create the final path to save the file based on root_path"""
+    label_name = grab_label_name(conf['Labels'])
+    backbone = conf['Backbone']
+    data_source = conf['DataSource']
+    model_name = conf['Model']
+    final_path = f"{root_path}/{model_name}/{backbone}/{data_source}/"
+    final_path = final_path + f"{conf['Target']}_{label_name}/"
+    final_path = final_path + filename
+    print(final_path)
+    return final_path
+
+
+def zeroshot_classifier(model, classnames, templates):
+    """Generate zeroshot embeddings using CLIP aggregation"""
     with torch.no_grad():
         zeroshot_weights = []
         prompts = []
@@ -54,31 +61,82 @@ def zeroshot_classifier(classnames, templates):
             class_embedding /= class_embedding.norm()
             zeroshot_weights.append(class_embedding)
         zeroshot_weights = torch.stack(zeroshot_weights, dim=1).cuda()
-    return zeroshot_weights, prompts
+    return zeroshot_weights
 
 
-zeroshot_weights, prompts = zeroshot_classifier(race_classes,
-                                                original_race_clip_templates)
+def run():
+    """Run the CLIP aggregation predictions"""
+    conf = load_json("./conf.json")
+    for datasource in conf['DataSource']:
+        temp_conf = conf.copy()
+        temp_conf['DataSource'] = datasource
+        label_name = grab_label_name(temp_conf['Labels'])
+        model_name = temp_conf['Model']
+        backbone = temp_conf['Backbone']
+        data_source = temp_conf['DataSource']
+        preds_path = create_final_path(
+            temp_conf, temp_conf['Predictions'], "race_clip_aggregation.csv")
+        embs_path = f"{temp_conf['Embeddings']}/{model_name}"
+        img_path = f"{embs_path}/{backbone}/{data_source}/"
+        img_path = img_path + "generated_img_embs.pkl"
+        fface_path = temp_conf['Baseline']
 
-with torch.no_grad():
-    preds_dict = {}
-    fnames = []
-    preds = []
-    for _, emb in img_embs.iterrows():
-        name = emb['file']
-        img_features = emb['embeddings']
-        image_features = torch.from_numpy(img_features).to(device)
-        logits = 100. * image_features @ zeroshot_weights
-        text_probs = logits.softmax(dim=-1)
-        top_probs, top_labels = text_probs.cpu().topk(1, dim=-1)
-        pindex = top_labels.cpu().numpy().item()
-        fnames.append(name)
-        preds.append(preds_classes[pindex])
-    preds_dict['file'] = fnames
-    preds_dict['race_preds'] = preds
+        device = "cuda" if torch.cuda.is_available() else "cpu"
 
-preds_df = pd.DataFrame(data=preds_dict)
-new_df = fface_df.set_index('file').join(preds_df.set_index('file'))
-new_df.drop(columns=['service_test'], inplace=True)
+        img_embs = pd.read_pickle(img_path)
+        fface_df = pd.read_csv(fface_path)
 
-new_df.to_csv(f"{model_name}_{data_source}_full_race_clip_aggregation.csv")
+        model, _, _ = open_clip.create_model_and_transforms(
+            backbone, pretrained=data_source, device=device)
+
+        temp_dict = {
+            "age_race_gender": [
+                'a photo of a {} man',
+                'a photo of a {} woman',
+                'a photo of a young {} man',
+                'a photo of a young {} woman',
+                'a photo of a middle-aged {} man',
+                'a photo of a middle-aged {} woman',
+                'a photo of an old {} man',
+                'a photo of an old {} woman'
+            ],
+            "original_clip_labels": [
+                'a photo of a {} man',
+                'a photo of a {} woman'
+            ]
+        }
+
+        race_classes = ["black", "indian", "latino", "white",
+                        "middle eastern", "southeast asian", "east asian",]
+        preds_classes = ['Black', 'Indian', 'Latino_Hispanic',  'White',
+                         'Middle Eastern', 'Southeast Asian', 'East Asian']
+
+        weights = zeroshot_classifier(
+            model, race_classes, temp_dict[label_name])
+
+        with torch.no_grad():
+            preds_dict = {}
+            fnames = []
+            preds = []
+            for _, emb in img_embs.iterrows():
+                name = emb['file']
+                img_features = emb['embeddings']
+                image_features = torch.from_numpy(img_features).to(device)
+                logits = 100. * image_features @ weights
+                text_probs = logits.softmax(dim=-1)
+                _, top_labels = text_probs.cpu().topk(1, dim=-1)
+                pindex = top_labels.cpu().numpy().item()
+                fnames.append(name)
+                preds.append(preds_classes[pindex])
+            preds_dict['file'] = fnames
+            preds_dict['race_preds'] = preds
+
+        preds_df = pd.DataFrame(data=preds_dict)
+        new_df = fface_df.set_index('file').join(preds_df.set_index('file'))
+        new_df.drop(columns=['service_test'], inplace=True)
+
+        new_df.to_csv(preds_path)
+
+
+if __name__ == "__main__":
+    run()

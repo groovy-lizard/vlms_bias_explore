@@ -56,6 +56,14 @@ def grab_label_name(label_filename):
     return label_name
 
 
+def grab_back_bone(path):
+    """Grab backbone name from filepath"""
+    path = path.split("/")[-1]
+    path = path.split(".")[0]
+    path = path.split("_")[0]
+    return path
+
+
 def list_item_swap(item_list, i1, i2):
     """Swap item_list items given value
 
