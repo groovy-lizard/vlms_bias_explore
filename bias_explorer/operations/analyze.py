@@ -96,10 +96,27 @@ def filter_best_modes(reports):
 
 
 def grab_top_01(reports):
-    """Retrieve the top k row of reports"""
+    """Retrieve the top 01 row of reports"""
     filtered_reports = {}
     for dsname, df in reports.items():
         filtered_reports[dsname] = df.loc[df['Mode'] == 'Top 01'].squeeze()
+    return filtered_reports
+
+
+def grab_avg_sum(reports):
+    """Retrieve the avg. sum row of reports"""
+    filtered_reports = {}
+    for dsname, df in reports.items():
+        filtered_reports[dsname] = df.loc[df['Mode'] == 'Avg Sum'].squeeze()
+    return filtered_reports
+
+
+def grab_openai_agg(reports):
+    """Retrieve the openai aggregation row of reports"""
+    filtered_reports = {}
+    for dsname, df in reports.items():
+        filtered_reports[dsname] = df.loc[df['Mode']
+                                          == 'openAI Aggregation'].squeeze()
     return filtered_reports
 
 
@@ -199,7 +216,33 @@ def top_k_analysis(conf):
 
 
 def aggregation_analysis(conf):
-    """Compare top-k vs openAI's aggregation"""
+    """Compare aggregation techniques"""
+    model = conf['Model']
+    backbone = conf['Backbone']
+    metric = conf['Metric']
+    report_path = conf['Reports']
+
+    ds_path = f"{report_path}/{model}/{backbone}"
+    label = system.grab_label_name(conf['Labels'])
+    ln = f"{conf['Target']}_{label}"
+    final_path = f"{conf['EDA']}/{conf['Target']}_classification/{label}"
+    out_path = f"{final_path}/{backbone}_aggregation_analysis.csv"
+    print("Collecting reports...")
+    our_reps = collect_reports(ds_path, ln, metric)
+    our_reps = grab_avg_sum(our_reps)
+    agg_reps = collect_reports(ds_path, ln, metric, True)
+    agg_reps = grab_openai_agg(agg_reps)
+    print("Generating aggregation analysis")
+    our_df = pd.DataFrame(our_reps.values(), index=our_reps.keys())
+    our_df['Race Gap'] = race_gap(our_df)
+
+    agg_df = pd.DataFrame(agg_reps.values(), index=agg_reps.keys())
+    agg_df['Race Gap'] = race_gap(agg_df)
+    final_df = pd.concat([our_df, agg_df])
+    final_df.columns.names = ['datasource']
+    print("Saving to csv...")
+    final_df.to_csv(out_path, index_label="datasource")
+    print("Done!")
 
 
 def prep_eda_folders(conf):
@@ -216,3 +259,4 @@ def run(conf):
     data_scaling_analysis(conf)
     prompt_analysis(conf)
     top_k_analysis(conf)
+    aggregation_analysis(conf)

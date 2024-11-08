@@ -189,7 +189,7 @@ def add_topk_preds(preds_path, metric_name, rep_dict):
     """
     k_preds = get_topk_preds(preds_path)
     for k, path in k_preds.items():
-        mode_name = f"Top {k}"
+        mode_name = f"Top {k.zfill(2)}"
         k_df = dataloader.load_df(path)
         rep_dict = gen_dict_report(k_df, mode_name, metric_name, rep_dict)
     return rep_dict

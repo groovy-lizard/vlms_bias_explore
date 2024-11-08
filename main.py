@@ -15,6 +15,13 @@ def run_all_models(conf, ops):
             for operation in conf['Operations'].items():
                 if operation[1]:
                     ops[operation[0]].run(temp_conf)
+    if conf['Flags']['analyze']:
+        for backbone, datasources in arch_dict.items():
+            temp_conf = conf.copy()
+            temp_conf['Backbone'] = backbone
+            for datasource in datasources:
+                temp_conf['DataSource'] = datasource
+                ops['Analyze'].run(temp_conf)
 
 
 def run_all_sources(conf, ops):
